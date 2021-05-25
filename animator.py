@@ -30,8 +30,8 @@ if len(sys.argv) == 2:
 else:
     dynamic_filename = utils.read_config_param(
         config, "dynamic_file", lambda el : el, lambda el : True)
-simulation_filename = utils.read_config_param(
-    config, "simulation_file", lambda el : el, lambda el : True)
+animation_filename = utils.read_config_param(
+    config, "animation_file", lambda el : el, lambda el : True)
 delta_t = utils.read_config_param(
     config, "delta_t_anim", lambda el : float(el), lambda el : el > 0)
 # There are (N x N + 1) particles
@@ -58,7 +58,7 @@ for i in range(N):
                 q=Q if (i + j) % 2 == 0 else -Q
             ))
 
-ovito_file = open(simulation_filename, "w")
+ovito_file = open(animation_filename, "w")
 dynamic_file = open(dynamic_filename, "r")
 
 restart = True
@@ -90,7 +90,7 @@ for linenum, line in enumerate(dynamic_file):
         (vx,vy) = (float(line_vec[2]), float(line_vec[3]))
         ovito_file.write(get_ovito_line(r, x, y, 0, True))
 
-print(f'Generated {simulation_filename}')
+print(f'Generated {animation_filename}')
 
 dynamic_file.close()
 ovito_file.close()

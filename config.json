@@ -1,30 +1,20 @@
 {
-    "dynamic_file": "BEEMAN_1.00000E-16_100000.txt",
-    "simulation_file": "simu.xyz",
+    "dynamic_file": "dynamic.txt",
+    "animation_file": "simu.xyz",
 
-    "osc": {
-        "algo": "Beeman",
-        "mass": 70,
-        "k": 1e4,
-        "gamma": 100,
-        "tf": 5,
-        "r0": 1,
-        "A": 1
-    },
+    "N": 200,
+    "L": 20,
+    "d": 1.2,
 
-    "rad": {
-        "algo": "Beeman",
-        "mass": 1e-27,
-        "k": 1e10,
-        "N": 16,
-        "D": 1e-8,
-        "Q": 1e-19,
-        "v0": 10e3,
-        "use_seed": false,
-        "seed": 1534342
-    },
+    "rmin": 0.15,
+    "rmax": 0.32,
+    "vdmax": 1.55,
+    "tau": 0.5,
+    "beta": 0.9,
 
-    "delta_t_sim": 1e-15,
+    "use_seed": false,
+    "seed": 1534342,
+
     "delta_t_print": 1e-15,
     "delta_t_anim": 1e-14,
 
