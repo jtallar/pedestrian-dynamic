@@ -21,8 +21,8 @@ Everything is configured by modifying `config.json`. Available configuration key
    - `beta`: velocity formula exponent
    - `use_seed`: if true use fixed seed, if false use nanoseconds
    - `seed`: fixed seed value
-   - `dt_print_mult`: timestep multiplier for simulation prints to file. dt_print = dt * dt_print_mult
-   - `dt_anim_mult`: timestep multiplier for animation prints to file. dt_anim = dt * dt_anim_mult
+   - `dt_print_mult`: integer timestep multiplier for simulation prints to file. dt_print = dt * dt_print_mult
+   - `dt_anim_mult`: integer timestep multiplier for animation prints to file. dt_anim = dt * dt_anim_mult
    - `plot`: determines whether to plot or not single analysis, must be true or false
 
 ## Particle generator
