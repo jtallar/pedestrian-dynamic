@@ -1,0 +1,26 @@
+import sys
+import json
+import genLib as gen
+import utils
+
+# Read params from config.json
+with open("config.json") as file:
+    config = json.load(file)
+
+dynamic_filename = utils.read_config_param(
+    config, "dynamic_file", lambda el : el, lambda el : True)
+
+N = utils.read_config_param(
+    config, "N", lambda el : int(el), lambda el : el > 0)
+L = utils.read_config_param(
+    config, "L", lambda el : float(el), lambda el : el > 0)
+rmin = utils.read_config_param(
+    config, "rmin", lambda el : float(el), lambda el : el >= 0)
+
+particles = gen.particles(N, L, rmin)
+while len(particles) != N:
+    print(f'Could only fit {len(particles)} particles, trying again...')
+    particles = gen.particles(N, L, rmin)
+
+gen.data_files(L, particles, dynamic_filename)
+print(f'Generated file: {dynamic_filename}')
