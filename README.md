@@ -39,7 +39,7 @@ Everything is configured by modifying `config.json`. Available configuration key
 ## Simulation
 To generate executable and run damped oscillator simulation
 1. Run `./prepare.sh` in root to generate executables (only required once).
-2. Run `./target/tp4-simu-1.0/damped-osc.sh -Dalgo=algo -Ddt=dt`. Parameters from `config.json` can be overwritten by using `algo` and `dt` properties.
+2. Run `./target/tp5-simu-1.0/damped-osc.sh -Dalgo=algo -Ddt=dt`. Parameters from `config.json` can be overwritten by using `algo` and `dt` properties.
 
 Output will be printed to `dynamic_file`, showing time and particle position and velocity for each timestep.
 
@@ -71,7 +71,7 @@ Contains obtained values using the previously mentioned script. It is used to pl
 ## Simulation
 To generate executable and run damped oscillator simulation
 1. Run `./prepare.sh` in root to generate executables (only required once).
-2. Run `./target/tp4-simu-1.0/radiation-interaction.sh -Ddt=dt -Dv0=v0`. Parameters from `config.json` can be overwritten by using `dt` and `v0` properties.
+2. Run `./target/tp5-simu-1.0/radiation-interaction.sh -Ddt=dt -Dv0=v0`. Parameters from `config.json` can be overwritten by using `dt` and `v0` properties.
 
 Output will be printed to `dynamic_file`, showing time and particle position and velocity for each timestep.
 
