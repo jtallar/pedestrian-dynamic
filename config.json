@@ -15,8 +15,8 @@
     "use_seed": false,
     "seed": 1534342,
 
-    "delta_t_print": 1e-15,
-    "delta_t_anim": 1e-14,
+    "dt_print_mult": 1,
+    "dt_anim_mult": 1,
 
     "plot": true
 }
