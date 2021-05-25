@@ -28,7 +28,8 @@ Everything is configured by modifying `config.json`. Available configuration key
 ## Particle generator
 To generate initial particle positions by creating `dynamic_file`. 
 Generates N particles with random positions, rmin and 0 velocity. If N cannot be reached in a number of iterations, resets and tries again.
-Run `python3 generator.py`.
+Run `python3 generator.py [dynamic_filename] [N]`.
+If provided, `dynamic_filename` and `N` parameters overwrite config params
 
 ## Simulation
 To generate executable and run damped oscillator simulation

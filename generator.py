@@ -7,6 +7,12 @@ import utils
 with open("config.json") as file:
     config = json.load(file)
 
+# If provided, overwrite config params
+if len(sys.argv) >= 2:
+    config["dynamic_file"] = sys.argv[1]
+if len(sys.argv) >= 3:
+    config["N"] = sys.argv[2]
+
 dynamic_filename = utils.read_config_param(
     config, "dynamic_file", lambda el : el, lambda el : True)
 
