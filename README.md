@@ -1,4 +1,4 @@
-# Damped Oscillator + Radiation Interaction
+# Pedestrian Dynamic - Contractile Particle Method
 
 ## What to Install
 - `python3 -m pip install numpy`
@@ -10,31 +10,25 @@
 ## Configuration
 Everything is configured by modifying `config.json`. Available configuration keys are:
    - `dynamic_file`: dynamic file filepath
-   - `simulation_file`: animation file filepath
-   - `osc`: configurations for damped oscillator
-      - `algo`: name of the algorithm to use
-      - `mass`: particle mass
-      - `k`: coefficient of the restoring force
-      - `gamma`: characteristic gamma quantity
-      - `tf`: end time of simulation
-      - `r0`: initial position
-      - `A`: oscillator amplitude
-   - `rad`: configurations for radiation interaction system
-      - `algo`: name of the algorithm to use
-      - `mass`: particle mass
-      - `k`: Coulomb's constant
-      - `N`: number of static particles per dimension (NxN matrix)
-      - `D`: distance between static particles
-      - `Q`: particle charge
-      - `v0`: particle initial horizontal velocity
-      - `use_seed`: if true use fixed seed, if false use nanoseconds
-      - `seed`: fixed seed value
-   - `delta_t_sim`: timestep between simulation measurements
+   - `animation_file`: animation file filepath
+   - `N`: number of pedestrians in the room
+   - `L`: room side, room will be of L x L
+   - `d`: exit width
+   - `rmin`: minimum pedestrian radius
+   - `rmax`: maximum pedestrian radius
+   - `vdmax`: maximum desired velocity
+   - `tau`: time taken for a particle to reach its maximum radius
+   - `beta`: velocity formula exponent
+   - `use_seed`: if true use fixed seed, if false use nanoseconds
+   - `seed`: fixed seed value
    - `delta_t_print`: timestep between simulation prints to file
    - `delta_t_anim`: timestep between animation prints to file
    - `plot`: determines whether to plot or not single analysis, must be true or false
 
-# Damped Oscillator
+## Particle generator
+To generate initial particle positions by creating `dynamic_file`. 
+Generates N particles with random positions, rmin and 0 velocity. If N cannot be reached in a number of iterations, resets and tries again.
+Run `python3 generator.py`.
 
 ## Simulation
 To generate executable and run damped oscillator simulation

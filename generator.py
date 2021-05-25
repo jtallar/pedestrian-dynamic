@@ -17,6 +17,13 @@ L = utils.read_config_param(
 rmin = utils.read_config_param(
     config, "rmin", lambda el : float(el), lambda el : el >= 0)
 
+# Random seed configuration
+use_seed = utils.read_config_param(
+    config, "use_seed", lambda el : bool(el), lambda el : True)
+if use_seed:
+    utils.set_random_seed(utils.read_config_param(
+        config, "seed", lambda el : el, lambda el : True))
+
 particles = gen.particles(N, L, rmin)
 while len(particles) != N:
     print(f'Could only fit {len(particles)} particles, trying again...')

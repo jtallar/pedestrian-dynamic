@@ -1,7 +1,11 @@
 import sys
+import random
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 import numpy as np
+
+def set_random_seed(seed):
+    random.seed(seed)
 
 def invalid_param(param_name):
     print(f'Error in config. Invalid or missing {param_name}!')
