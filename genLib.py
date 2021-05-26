@@ -63,4 +63,6 @@ def data_files(side, particles, dynamic_filename):
         # TODO: Check that 7E precision is OK for this system
         dynamic_file.write('\n%.7E %.7E %.7E %.7E' % (p.x, p.y, p.vx, p.vy))
 
+    dynamic_file.write('*')       # dynamic separator
+
     dynamic_file.close()

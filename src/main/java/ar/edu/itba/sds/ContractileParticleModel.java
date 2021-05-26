@@ -2,6 +2,7 @@ package ar.edu.itba.sds;
 
 import ar.edu.itba.sds.algos2D.StepAlgorithm;
 import ar.edu.itba.sds.objects.AlgorithmType;
+import ar.edu.itba.sds.objects.Particle;
 import ar.edu.itba.sds.objects.Step;
 import ar.edu.itba.sds.objects.Vector2D;
 import org.json.JSONException;
@@ -10,9 +11,7 @@ import org.json.JSONObject;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Random;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -51,7 +50,7 @@ public class ContractileParticleModel {
     private static int n;
     private static double l, d;
     private static double rmin, rmax, vdmax, tau, beta;
-    private static double deltaTimeSim;
+    private static double time, deltaTimeSim;
     private static int deltaTimePrintMult;
     private static long seed;
 
@@ -69,14 +68,22 @@ public class ContractileParticleModel {
 
         final Random rand = new Random(seed);
 
-        // Delete dynamicFile if already exists
-//        try {
-//            Files.deleteIfExists(Paths.get(dynamicFilename));
-//        } catch (IOException e) {
-//            System.err.printf("Could not delete %s\n", dynamicFilename);
-//            System.exit(ERROR_STATUS);
-//            return;
-//        }
+        // Parse dynamic file to initialize particle list
+        List<Particle> particles;
+        try(BufferedReader reader = new BufferedReader(new FileReader(dynamicFilename))) {
+            // Set initial time
+            time = Double.parseDouble(reader.readLine());
+            // Create particle list
+            particles = createParticleList(reader, n, rmin);
+        } catch (FileNotFoundException e) {
+            System.err.println("Dynamic file not found");
+            System.exit(ERROR_STATUS);
+            return;
+        } catch (IOException e) {
+            System.err.println("Error reading dynamic file");
+            System.exit(ERROR_STATUS);
+            return;
+        }
 
         System.out.printf("Running with N=%d and d=%.3E. \nOutput to ", n, d);
         System.err.printf("%s", dynamicFilename);
@@ -95,11 +102,33 @@ public class ContractileParticleModel {
 //                printStep(curStep);
 //            }
 //        }
-        System.out.println("Done");
 
         // Print simulation time
         long endTime = System.currentTimeMillis();
         System.out.printf("Simulation time \t\t ⏱  %g seconds\n", (endTime - startTime) / 1000.0);
+    }
+
+    private static List<Particle> createParticleList(BufferedReader reader, int n, double radius)
+            throws IOException {
+
+        List<Particle> particles = new ArrayList<>();
+
+        for (int i = 0; i < n; i++) {
+            String line = reader.readLine();
+            if (line == null) throw new IOException();
+
+            // Values has format (x, y, vx, vy)
+            final String[] values = line.split(" ");
+            double x = Double.parseDouble(values[0]), y = Double.parseDouble(values[1]);
+            double vx = Double.parseDouble(values[2]), vy = Double.parseDouble(values[3]);
+
+            particles.add(new Particle(i, new Vector2D(x, y), new Vector2D(vx, vy), radius));
+        }
+
+        // Check that there are no lines remaining
+        if (reader.readLine() != null) throw new IOException();
+
+        return particles;
     }
 
     private static void printStep(Step<Vector2D> step) {
