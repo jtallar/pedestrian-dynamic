@@ -73,6 +73,9 @@ public class ContractileParticleModel {
         try(BufferedReader reader = new BufferedReader(new FileReader(dynamicFilename))) {
             // Set initial time
             time = Double.parseDouble(reader.readLine());
+            // Set particle class properties
+            Particle.setSide(l);
+            Particle.setDoorWidth(d);
             // Create particle list
             particles = createParticleList(reader, n, rmin);
         } catch (FileNotFoundException e) {
@@ -124,6 +127,10 @@ public class ContractileParticleModel {
 
             particles.add(new Particle(i, new Vector2D(x, y), new Vector2D(vx, vy), radius));
         }
+
+        // Parse * separator
+        String line = reader.readLine();
+        if (line == null || !line.equals("*")) throw new IOException();
 
         // Check that there are no lines remaining
         if (reader.readLine() != null) throw new IOException();

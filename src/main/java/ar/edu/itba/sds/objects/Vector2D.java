@@ -16,6 +16,11 @@ public class Vector2D {
         this.y = 0.0;
     }
 
+    public void setCoordinates(double x, double y) {
+        this.x = x;
+        this.y = y;
+    }
+
     public double getX() {
         return x;
     }
