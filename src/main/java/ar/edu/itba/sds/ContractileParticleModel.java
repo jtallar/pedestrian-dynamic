@@ -5,6 +5,7 @@ import ar.edu.itba.sds.objects.AlgorithmType;
 import ar.edu.itba.sds.objects.Particle;
 import ar.edu.itba.sds.objects.Step;
 import ar.edu.itba.sds.objects.Vector2D;
+import javafx.util.Pair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -20,7 +21,7 @@ public class ContractileParticleModel {
     private static final String DEFAULT_CONFIG = "config.json";
     private static final String CONFIG_PARAM = "config";
 
-    private static final String DYNAMIC_FILE_PARAM = "dynamicSuf";
+    private static final String DYNAMIC_FILE_PARAM = "dynamic";
     private static final String D_PARAM = "d";
     private static final String N_PARAM = "n";
 
@@ -68,6 +69,16 @@ public class ContractileParticleModel {
 
         final Random rand = new Random(seed);
 
+        System.out.printf("Running with N=%d and d=%.3E. \nOutput to ", n, d);
+        System.err.printf("%s", dynamicFilename);
+        System.out.print("\n\n");
+
+
+        // Cell index method variables
+        int cimM = (int) (l / (2 * rmax));
+        double cimCellWidth = l / cimM;
+        Map<Pair<Integer, Integer>, Set<Particle>> cellMatrix = new HashMap<>();
+
         // Parse dynamic file to initialize particle list
         List<Particle> particles;
         try(BufferedReader reader = new BufferedReader(new FileReader(dynamicFilename))) {
@@ -77,7 +88,7 @@ public class ContractileParticleModel {
             Particle.setSide(l);
             Particle.setDoorWidth(d);
             // Create particle list
-            particles = createParticleList(reader, n, rmin);
+            particles = createParticleList(reader, n, rmin, cellMatrix, cimM, cimCellWidth);
         } catch (FileNotFoundException e) {
             System.err.println("Dynamic file not found");
             System.exit(ERROR_STATUS);
@@ -87,11 +98,6 @@ public class ContractileParticleModel {
             System.exit(ERROR_STATUS);
             return;
         }
-
-        System.out.printf("Running with N=%d and d=%.3E. \nOutput to ", n, d);
-        System.err.printf("%s", dynamicFilename);
-        System.out.print("\n\n");
-
         // Measure simulation time
         long startTime = System.currentTimeMillis();
 
@@ -111,7 +117,8 @@ public class ContractileParticleModel {
         System.out.printf("Simulation time \t\t ⏱  %g seconds\n", (endTime - startTime) / 1000.0);
     }
 
-    private static List<Particle> createParticleList(BufferedReader reader, int n, double radius)
+    private static List<Particle> createParticleList(BufferedReader reader, int n, double radius,
+                                                     Map<Pair<Integer, Integer>, Set<Particle>> cellMatrix, int M, double cellWidth)
             throws IOException {
 
         List<Particle> particles = new ArrayList<>();
@@ -125,7 +132,14 @@ public class ContractileParticleModel {
             double x = Double.parseDouble(values[0]), y = Double.parseDouble(values[1]);
             double vx = Double.parseDouble(values[2]), vy = Double.parseDouble(values[3]);
 
-            particles.add(new Particle(i, new Vector2D(x, y), new Vector2D(vx, vy), radius));
+            Particle p = new Particle(i, new Vector2D(x, y), new Vector2D(vx, vy), radius);
+            particles.add(p);
+
+            // Add particle to CIM matrix
+            Pair<Integer, Integer> rowColPair = getRowColPair(x, y, M, cellWidth);
+            final Set<Particle> set = cellMatrix.getOrDefault(rowColPair, new HashSet<>());
+            set.add(p);
+            cellMatrix.put(rowColPair, set);
         }
 
         // Parse * separator
@@ -136,6 +150,11 @@ public class ContractileParticleModel {
         if (reader.readLine() != null) throw new IOException();
 
         return particles;
+    }
+
+    private static Pair<Integer, Integer> getRowColPair(double x, double y, int M, double cellWidth) {
+        int cellIndex = (int) (x / cellWidth) + (int) (y / cellWidth) * M;
+        return new Pair<>(cellIndex / M + 1, cellIndex % M + 1);
     }
 
     private static void printStep(Step<Vector2D> step) {
@@ -190,7 +209,10 @@ public class ContractileParticleModel {
         }
 
         // Check properties to override parameters for faster simulation repetition
-        String dynamicSuffix = properties.getProperty(DYNAMIC_FILE_PARAM, "");
+        String dynamicFilenameProp = properties.getProperty(DYNAMIC_FILE_PARAM);
+        if (dynamicFilenameProp != null) {
+            dynamicFilename = dynamicFilenameProp;
+        }
 
         String dProp = properties.getProperty(D_PARAM);
         if (dProp != null) {
@@ -214,11 +236,6 @@ public class ContractileParticleModel {
                 throw new ArgumentException(String.format("Invalid %s param", N_PARAM));
             }
             n = value;
-        }
-
-        // If d or n were set by param and dynamic name wasn't, rename dynamic file with d and n
-        if (dProp != null || nProp != null ) {
-            dynamicFilename = String.format("dynamic_%.5E_%d%s.txt", d, n, dynamicSuffix);
         }
     }
 

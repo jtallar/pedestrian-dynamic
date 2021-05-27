@@ -89,4 +89,14 @@ public class Particle {
     public int hashCode() {
         return Integer.hashCode(id);
     }
+
+    @Override
+    public String toString() {
+        return "Particle{" +
+                "id=" + id +
+                ", pos=" + pos +
+                ", vel=" + vel +
+                ", r=" + r +
+                '}';
+    }
 }
