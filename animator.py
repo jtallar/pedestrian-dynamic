@@ -16,7 +16,7 @@ def write_corners(ovito_file, N, Lx, Ly):
 def get_ovito_line(r, x, y, p_id, pos):
     if pos:
         return str(r)+' '+str(x)+' '+str(y)+' '+str(p_id)+RED+'\n'
-    return str(r)+' '+str(x)+' '+str(y)+' '+str(p_id)+BLACK+'\n' # TODO: Change to BLACK
+    return str(r)+' '+str(x)+' '+str(y)+' '+str(p_id)+BLACK+'\n'
 
 # Read params from config.json
 with open("config.json") as file:
