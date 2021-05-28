@@ -1,6 +1,6 @@
 package ar.edu.itba.sds.objects;
 
-public class Particle {
+public class Particle implements Comparable<Particle> {
     private static final double DOOR_MARGIN = 0.2;
     private static final double DOOR_TARGET_Y = 0;
     private static final double FAR_TARGET_Y = -10;
@@ -13,7 +13,7 @@ public class Particle {
     private Vector2D vel;
     private double r;
     private Vector2D target;
-    private boolean contact;
+    private Vector2D escapeVel;
     private boolean doorCrossed;
 
     public static void setSide(double l) {
@@ -39,7 +39,7 @@ public class Particle {
         this.pos = pos;
         this.vel = vel;
         this.r = r;
-        this.contact = false;
+        this.escapeVel = null;
         this.doorCrossed = false;
         this.target = new Vector2D();
         updateTarget();
@@ -51,11 +51,11 @@ public class Particle {
         if (doorCrossed) {
             targetY = FAR_TARGET_Y;
             targetWidth = FAR_TARGET_WIDTH;
-            targetMargin = DOOR_MARGIN;
-        } else {
-            targetY = 0;
-            targetWidth = d;
             targetMargin = 0;
+        } else {
+            targetY = DOOR_TARGET_Y;
+            targetWidth = d;
+            targetMargin = DOOR_MARGIN;
         }
 
         double leftTargetX = (l - targetWidth + targetMargin) / 2;
@@ -77,6 +77,18 @@ public class Particle {
         this.vel = vel;
     }
 
+    public void setEscapeVel(Vector2D escapeVel) {
+        this.escapeVel = escapeVel;
+    }
+
+    public Vector2D getPos() {
+        return pos;
+    }
+
+    public double getR() {
+        return r;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -88,6 +100,11 @@ public class Particle {
     @Override
     public int hashCode() {
         return Integer.hashCode(id);
+    }
+
+    @Override
+    public int compareTo(Particle o) {
+        return id - o.id;
     }
 
     @Override

@@ -102,6 +102,18 @@ public class ContractileParticleModel {
         long startTime = System.currentTimeMillis();
 
         // Simulation
+        while (!particles.isEmpty()) {
+            // Find contacts and calculate Ve
+
+
+            // Adjust radii
+
+            // Compute Vd
+
+            // Update speed and position
+
+            // Print to file
+        }
 //        final StepAlgorithm algorithm = StepAlgorithm.algorithmBuilder(algorithmType, f, deltaTimeSim, r0, v0, mass, d, n);
 //        Step<Vector2D> curStep = algorithm.getLastStep();
 //        printStep(curStep);
@@ -115,6 +127,93 @@ public class ContractileParticleModel {
         // Print simulation time
         long endTime = System.currentTimeMillis();
         System.out.printf("Simulation time \t\t ⏱  %g seconds\n", (endTime - startTime) / 1000.0);
+    }
+
+    private static void findContacts(List<Particle> particleList, Map<Pair<Integer, Integer>, Set<Particle>> cellMatrix, int M, double cellWidth) {
+        for (int cell = 0; cell < M * M; cell++) {
+            int row = cell / M + 1, col = cell % M + 1;
+            // Iterate cell over itself
+            findSetCollision(cellMatrix.getOrDefault(new Pair<>(row, col), new HashSet<>()));
+
+            // Iterate over 4 neighbours --> L` --> DOWN, DOWN-LEFT, LEFT, UP-LEFT
+            List<Pair<Integer, Integer>> visitRowCol = Arrays.asList(new Pair<>(row - 1, col),
+                    new Pair<>(row - 1, col - 1), new Pair<>(row, col - 1), new Pair<>(row + 1, col - 1));
+            for (Pair<Integer, Integer> pair : visitRowCol) {
+                findSetCollision(cellMatrix.getOrDefault(new Pair<>(row, col), new HashSet<>()), cellMatrix.getOrDefault(pair, new HashSet<>()));
+            }
+        }
+    }
+
+    // Collisions in the same set
+    private static void findSetCollision(Set<Particle> set) {
+        for (Particle p1 : set) {
+            boolean contacted = false;
+            Vector2D eij = new Vector2D();
+            for (Particle p2 : set) {
+                int c = p1.compareTo(p2);
+                // TODO: Do wall collision correctly
+                if (c == 0) {
+                    final Vector2D pos = p1.getPos();
+                    // Check for wall collision
+                    if (pos.getX() - p1.getR() < 0) {
+                        // Left wall collision
+                        contacted = true;
+                        eij = Vector2D.sum(eij, Vector2D.getProjection(pos, new Vector2D(0, pos.getY())));
+                    } else if (pos.getX() + p1.getR() > l) {
+                        // Right wall collision
+                        contacted = true;
+                        eij = Vector2D.sum(eij, Vector2D.getProjection(pos, new Vector2D(l, pos.getY())));
+                    }
+                    if (pos.getY() + p1.getR() > l) {
+                        // Top wall collision
+                        contacted = true;
+                        eij = Vector2D.sum(eij, Vector2D.getProjection(pos, new Vector2D(pos.getX(), l)));
+                    } else if (pos.getY() - p1.getR() < 0) {
+                        // TODO: Change this to real values
+                        Vector2D leftTarget = new Vector2D(), rightTarget = new Vector2D();
+                        // Bottom wall collision
+                        if (pos.getX() < leftTarget.getX() || pos.getX() > rightTarget.getX()) {
+                            // No door below
+                            contacted = true;
+                            eij = Vector2D.sum(eij, Vector2D.getProjection(pos, new Vector2D(pos.getX(), 0)));
+                        } else if (Vector2D.mod(pos, leftTarget) < p1.getR()) {
+                            // Door below, contact with left edge
+                            contacted = true;
+                            eij = Vector2D.sum(eij, Vector2D.getProjection(pos, leftTarget));
+                        } else if (Vector2D.mod(pos, rightTarget) < p1.getR()) {
+                            // Door below, contact with right edge
+                            contacted = true;
+                            eij = Vector2D.sum(eij, Vector2D.getProjection(pos, rightTarget));
+                        }
+                    }
+                } else if (c > 0) {
+                    // Check for particle collision
+                    if (p1.borderDistance(p2) < 0) {
+                        contacted = true;
+                        eij = Vector2D.sum(eij, Vector2D.getProjection(p1.getPos(), p2.getPos()));
+                    }
+                }
+            }
+            // TODO: Cannot set Ve, could have other collisions. What do we do?
+            if (contacted) {
+                // Set Ve
+            }
+        }
+    }
+
+    // Collisions between different sets
+    private static void findSetCollision(Set<Particle> set1, Set<Particle> set2) {
+        for (Particle p1 : set1) {
+            boolean contacted = false;
+            Vector2D eij = new Vector2D();
+            for (Particle p2 : set2) {
+                // Check for particle collision
+                if (p1.borderDistance(p2) < 0) {
+                    contacted = true;
+                    eij = Vector2D.sum(eij, Vector2D.getProjection(p1.getPos(), p2.getPos()));
+                }
+            }
+        }
     }
 
     private static List<Particle> createParticleList(BufferedReader reader, int n, double radius,
