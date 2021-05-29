@@ -7,88 +7,68 @@ BLACK = ' 0 0 0'
 WHITE = ' 255 255 255'
 GREEN = ' 0 255 0'
 RED = ' 255 0 0'
-C = '1e-18 '
+C = '1e-10 '
 
 def write_corners(ovito_file, N, Lx, Ly):
     corners = str(N+4)+'\n\n'+C+'0 0 0'+WHITE+'\n'+C+'0 '+str(Ly)+' 0'+WHITE+'\n'+C+str(Lx)+' 0 0'+WHITE+'\n'+C+str(Lx)+' '+str(Ly)+' 0'+WHITE+'\n'
     ovito_file.write(corners)
 
-def get_ovito_line(r, x, y, p_id, pos):
-    if pos:
-        return str(r)+' '+str(x)+' '+str(y)+' '+str(p_id)+RED+'\n'
-    return str(r)+' '+str(x)+' '+str(y)+' '+str(p_id)+BLACK+'\n'
+def get_ovito_line(r, x, y, p_id, rmin, rmax):
+    return str(r)+' '+str(x)+' '+str(y)+' '+str(p_id)+' ' + str(int(255 * (1 - (rmax - r) / (rmax - rmin)))) + ' 0 0' +'\n'
 
 # Read params from config.json
 with open("config.json") as file:
     config = json.load(file)
 
-if "rad" not in config:
-    invalid_param("rad")
+if len(sys.argv) >= 2:
+    config["dynamic_file"] = sys.argv[1]
+if len(sys.argv) >= 3:
+    config["N"] = sys.argv[2]
 
-if len(sys.argv) == 2:
-    dynamic_filename = sys.argv[1]
-else:
-    dynamic_filename = utils.read_config_param(
-        config, "dynamic_file", lambda el : el, lambda el : True)
+dynamic_filename = utils.read_config_param(
+    config, "dynamic_file", lambda el : el, lambda el : True)
 animation_filename = utils.read_config_param(
     config, "animation_file", lambda el : el, lambda el : True)
-delta_t = utils.read_config_param(
-    config, "delta_t_anim", lambda el : float(el), lambda el : el > 0)
-# There are (N x N + 1) particles
-N = utils.read_config_param(
-    config["rad"], "N", lambda el : int(el), lambda el : el > 0)
-part_count = N * N + 1
-# Area size is (16 x D; 15 x D)
-D = utils.read_config_param(
-    config["rad"], "D", lambda el : float(el), lambda el : el > 0)
-Lx, Ly = 16 * D, 15 * D
-radius = 0.1 * D
-# Read particle charge
-Q = utils.read_config_param(
-    config["rad"], "Q", lambda el : float(el), lambda el : el > 0)
 
-# Build static particle list
-static_particles = []
-for i in range(N):
-    for j in range(N):
-        static_particles.append(obj.Particle(
-                i * N + j, 
-                (i + 1) * D,
-                j * D,
-                q=Q if (i + j) % 2 == 0 else -Q
-            ))
+N = utils.read_config_param(
+    config, "N", lambda el : int(el), lambda el : el > 0)
+L = utils.read_config_param(
+    config, "L", lambda el : float(el), lambda el : el > 0)
+
+rmin = utils.read_config_param(
+    config, "rmin", lambda el : float(el), lambda el : el > 0)
+rmax = utils.read_config_param(
+    config, "rmax", lambda el : float(el), lambda el : el > 0)
+
+delta_t_mult = utils.read_config_param(
+    config, "dt_anim_mult", lambda el : int(el), lambda el : el > 0)
 
 ovito_file = open(animation_filename, "w")
 dynamic_file = open(dynamic_filename, "r")
 
 restart = True
-target_time = 0
+target_count = delta_t_mult
 for linenum, line in enumerate(dynamic_file):
     if restart:
+        target_count += 1
         time = float(line.rstrip())
-        if time >= target_time:
-            write_corners(ovito_file, part_count, Lx, Ly)
+        if target_count >= delta_t_mult:
+            write_corners(ovito_file, N, L, L)
         restart = False
         p_id = 0
         continue
     if "*" == line.rstrip():
         restart = True
-        if time >= target_time:
-            target_time += delta_t
-            if time >= target_time:
-                print('Delta t is too small, there were no events in a gap! Exiting...')
-                sys.exit(1)
-            line = ''
-            for p in static_particles:
-                line += get_ovito_line(radius / 2, p.x, p.y, p.id, p.q > 0)
-            ovito_file.write(line)
+        if target_count >= delta_t_mult:
+            target_count = 0
         continue
     
-    if time >= target_time:
-        line_vec = line.rstrip().split(' ') # x y vx vy
-        (x,y,r) = (line_vec[0], line_vec[1], radius)
-        (vx,vy) = (float(line_vec[2]), float(line_vec[3]))
-        ovito_file.write(get_ovito_line(r, x, y, 0, True))
+    if target_count >= delta_t_mult:
+        line_vec = line.rstrip().split(' ') # id x y vx vy r
+        p_id = int(line_vec[0])
+        (x,y,r) = (float(line_vec[1]), float(line_vec[2]), float(line_vec[5]))
+        (vx,vy) = (float(line_vec[3]), float(line_vec[4]))
+        ovito_file.write(get_ovito_line(r, x, y, p_id, rmin, rmax))
 
 print(f'Generated {animation_filename}')
 

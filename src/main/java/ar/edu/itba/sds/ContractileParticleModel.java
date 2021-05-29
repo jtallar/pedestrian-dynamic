@@ -98,7 +98,7 @@ public class ContractileParticleModel {
             Particle.setSide(l);
             Particle.setDoorWidth(d);
             // Create particle list
-            particles = createParticleList(reader, n, rmin, cellMatrix, cimM, cimCellWidth);
+            particles = createParticleList(reader, n, cellMatrix, cimM, cimCellWidth);
         } catch (FileNotFoundException e) {
             System.err.println("Dynamic file not found");
             System.exit(ERROR_STATUS);
@@ -269,7 +269,7 @@ public class ContractileParticleModel {
         }
     }
 
-    private static List<Particle> createParticleList(BufferedReader reader, int n, double radius,
+    private static List<Particle> createParticleList(BufferedReader reader, int n,
                                                      Map<Pair<Integer, Integer>, Set<Particle>> cellMatrix, int M, double cellWidth)
             throws IOException {
 
@@ -281,10 +281,12 @@ public class ContractileParticleModel {
 
             // Values has format (x, y, vx, vy)
             final String[] values = line.split(" ");
-            double x = Double.parseDouble(values[0]), y = Double.parseDouble(values[1]);
-            double vx = Double.parseDouble(values[2]), vy = Double.parseDouble(values[3]);
+            int id = Integer.parseInt(values[0]);
+            double x = Double.parseDouble(values[1]), y = Double.parseDouble(values[2]);
+            double vx = Double.parseDouble(values[3]), vy = Double.parseDouble(values[4]);
+            double radius = Double.parseDouble(values[5]);
 
-            Particle p = new Particle(i, new Vector2D(x, y), new Vector2D(vx, vy), radius);
+            Particle p = new Particle(id, new Vector2D(x, y), new Vector2D(vx, vy), radius);
             particles.add(p);
 
             // Add particle to CIM matrix

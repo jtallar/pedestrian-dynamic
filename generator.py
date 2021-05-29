@@ -35,5 +35,5 @@ while len(particles) != N:
     print(f'Could only fit {len(particles)} particles, trying again...')
     particles = gen.particles(N, L, rmin)
 
-gen.data_files(L, particles, dynamic_filename)
+gen.data_files(L, particles, rmin, dynamic_filename)
 print(f'Generated file: {dynamic_filename}')
