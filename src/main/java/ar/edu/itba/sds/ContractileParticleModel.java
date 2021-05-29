@@ -73,9 +73,11 @@ public class ContractileParticleModel {
 
 
         // Cell index method variables
-        // TODO: Change matrix, should be bigger than L x L (count 10m below room)
-        int cimM = (int) (l / (2 * rmax));
-        double cimCellWidth = l / cimM;
+        // TODO: Check si va bien con 3/2 L x 3/2 L, sino ver de iterar desde -2M a M * M
+        int cimM = (int) ((3 * l / 2) / (2 * rmax));
+        double cimCellWidth = (3 * l / 2) / cimM;
+//        int cimM = (int) (l / (2 * rmax));
+//        double cimCellWidth = l / cimM;
         Map<Pair<Integer, Integer>, Set<Particle>> cellMatrix = new HashMap<>();
 
         // Delete exitFile if already exists
@@ -192,13 +194,13 @@ public class ContractileParticleModel {
     }
 
     private static void mapSetRemove(Map<Pair<Integer, Integer>, Set<Particle>> cellMatrix, Pair<Integer, Integer> key, Particle p) {
-        final Set<Particle> set = cellMatrix.get(key);
+        final Set<Particle> set = cellMatrix.getOrDefault(key, new HashSet<>());
         set.remove(p);
         cellMatrix.put(key, set);
     }
 
     private static void mapSetAdd(Map<Pair<Integer, Integer>, Set<Particle>> cellMatrix, Pair<Integer, Integer> key, Particle p) {
-        final Set<Particle> set = cellMatrix.get(key);
+        final Set<Particle> set = cellMatrix.getOrDefault(key, new HashSet<>());
         set.add(p);
         cellMatrix.put(key, set);
     }
@@ -241,6 +243,7 @@ public class ContractileParticleModel {
                             (-radius < pos.getY() && pos.getY() < radius)) p1.addCollision(new Vector2D(pos.getX(), 0));
                     // Left vertex collision
                     else if (Vector2D.dist(pos, leftVertex) < radius) p1.addCollision(leftVertex);
+                    // Right vertex collision
                     else if (Vector2D.dist(pos, rightVertex) < radius) p1.addCollision(rightVertex);
                 } else if (c > 0) {
                     // Check for particle collision
@@ -286,9 +289,7 @@ public class ContractileParticleModel {
 
             // Add particle to CIM matrix
             Pair<Integer, Integer> rowColPair = getRowColPair(x, y, M, cellWidth);
-            final Set<Particle> set = cellMatrix.getOrDefault(rowColPair, new HashSet<>());
-            set.add(p);
-            cellMatrix.put(rowColPair, set);
+            mapSetAdd(cellMatrix, rowColPair, p);
         }
 
         // Parse * separator

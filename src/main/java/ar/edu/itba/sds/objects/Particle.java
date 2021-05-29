@@ -14,7 +14,6 @@ public class Particle implements Comparable<Particle> {
     private double r;
     private Vector2D target;
     private Vector2D eij, escapeVel, targetVel;
-    private boolean doorCrossed;
 
     public static void setSide(double l) {
         Particle.l = l;
@@ -41,16 +40,15 @@ public class Particle implements Comparable<Particle> {
         this.r = r;
         this.targetVel = this.escapeVel = null;
         this.eij = new Vector2D();
-        this.doorCrossed = false;
         this.target = new Vector2D();
         updateTarget();
     }
 
     // TODO: Check if we should do this or what paper says: take a random point in door instead of closest one
     private void updateTarget() {
-        // TODO: Mepa que se puede poner que y < 0, total si hay colision probablemente sea antes, y sino aparece escapeVel
         double targetY, targetWidth, targetMargin;
-        if (doorCrossed) {
+        // TODO: Check si vale poner y < 0 o si hay algun caso en el que no aplique
+        if (pos.getY() < 0) {
             targetY = FAR_TARGET_Y;
             targetWidth = FAR_TARGET_WIDTH;
             targetMargin = 0;
@@ -109,6 +107,8 @@ public class Particle implements Comparable<Particle> {
         this.vel = (this.escapeVel != null) ? this.escapeVel : this.targetVel;
         // Update position
         this.pos = Vector2D.sum(this.pos, Vector2D.scalar(this.vel, dt));
+        // Update target
+        updateTarget();
         // Build Step
         return new Step<>(curTime, this.r, this.pos, this.vel);
     }
