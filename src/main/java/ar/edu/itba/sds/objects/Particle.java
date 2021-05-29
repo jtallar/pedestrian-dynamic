@@ -170,6 +170,10 @@ public class Particle implements Comparable<Particle> {
                 ", pos=" + pos +
                 ", vel=" + vel +
                 ", r=" + r +
+                ", target=" + target +
+                ", eij=" + eij +
+                ", escapeVel=" + escapeVel +
+                ", targetVel=" + targetVel +
                 '}';
     }
 }
