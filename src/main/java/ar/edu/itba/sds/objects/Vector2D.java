@@ -29,6 +29,10 @@ public class Vector2D {
         return y;
     }
 
+    public double mod() {
+        return sqrt(pow(x, 2) + pow(y, 2));
+    }
+
     public static double deltaX(Vector2D v1, Vector2D v2) {
         return v1.getX() - v2.getX();
     }
@@ -49,18 +53,17 @@ public class Vector2D {
         return new Vector2D(v.getX() * scalar, v.getY() * scalar);
     }
 
-
-    public static double mod(Vector2D v1, Vector2D v2) {
+    public static double dist(Vector2D v1, Vector2D v2) {
         return sqrt(pow(v1.getX() - v2.getX(), 2.0) + pow(v1.getY() - v2.getY(), 2.0));
     }
 
     public static Vector2D getProjection(Vector2D v1, Vector2D v2) {
-        final double mod = mod(v1, v2);
+        final double mod = dist(v1, v2);
         return new Vector2D(deltaX(v1, v2) / mod, deltaY(v1, v2) / mod);
     }
 
     public static Vector2D force(Vector2D v1, Vector2D v2, double k, double q, boolean pos) {
-        final double mod = mod(v1, v2);
+        final double mod = dist(v1, v2);
         final double fn = (k * q * q * ((pos)? 1 : -1 )) / pow(mod, 2.0);
         return new Vector2D(fn * deltaX(v1, v2) / mod, fn * deltaY(v1, v2) / mod);
     }
