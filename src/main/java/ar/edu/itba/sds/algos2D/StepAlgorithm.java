@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.function.BiFunction;
 
+/*
 import static ar.edu.itba.sds.objects.Vector2D.*;
 
 public abstract class StepAlgorithm implements Iterator<Step<Vector2D>> {
@@ -88,7 +89,7 @@ public abstract class StepAlgorithm implements Iterator<Step<Vector2D>> {
             System.out.println("Algorithm finished. Crossed min Y (0.0) position");
             return false;
         }
-        if (staticParticles.keySet().stream().anyMatch(v -> mod(pos.peek(), v) < dCut)) {
+        if (staticParticles.keySet().stream().anyMatch(v -> dist(pos.peek(), v) < dCut)) {
             System.out.println("Algorithm finished. Close particles");
             return false;
         }
@@ -112,4 +113,4 @@ public abstract class StepAlgorithm implements Iterator<Step<Vector2D>> {
 
         return map;
     }
-}
+}*/

@@ -1,5 +1,6 @@
 package ar.edu.itba.sds;
 
+/*
 import ar.edu.itba.sds.algos2D.StepAlgorithm;
 import ar.edu.itba.sds.objects.AlgorithmType;
 import ar.edu.itba.sds.objects.Step;
@@ -199,11 +200,13 @@ public class RadiationInteraction {
     }
 
 
-    /**
+    */
+/**
      * @param value double to check if valid
      * @param k factor to be multiple of
      * @return true if value ~= k * integer
-     */
+     *//*
+
     private static boolean doubleMultiple(double value, double k) {
         if (value % k < FLOAT_EPS) return true;
         return Math.abs(value % k - k) < FLOAT_EPS;
@@ -231,3 +234,4 @@ public class RadiationInteraction {
         return value;
     }
 }
+*/

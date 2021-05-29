@@ -1,5 +1,6 @@
 package ar.edu.itba.sds.algos2D;
 
+/*
 import ar.edu.itba.sds.objects.Step;
 import ar.edu.itba.sds.objects.Vector2D;
 
@@ -36,3 +37,4 @@ public class Beeman extends StepAlgorithm {
         return new Step<>(lastTime, nextPos, nextVel, nextAcc);
     }
 }
+*/
