@@ -74,10 +74,9 @@ public class ContractileParticleModel {
 
         // Cell index method variables
         // TODO: Check si va bien con 3/2 L x 3/2 L, sino ver de iterar desde -2M a M * M
-        int cimM = (int) ((3 * l / 2) / (2 * rmax));
-        double cimCellWidth = (3 * l / 2) / cimM;
-//        int cimM = (int) (l / (2 * rmax));
-//        double cimCellWidth = l / cimM;
+        int cimM = (int) (l / (2 * rmax));
+//        if (cimM % 2 != 0) cimM--; // Make sure M is even
+        double cimCellWidth = l / cimM;
         Map<Pair<Integer, Integer>, Set<Particle>> cellMatrix = new HashMap<>();
 
         // Delete exitFile if already exists
@@ -122,6 +121,8 @@ public class ContractileParticleModel {
             time += deltaTimeSim;
             // Update print count
             printCount++;
+            // Save time to print if needed
+            if (printCount == deltaTimePrintMult) dynamicStr.append(getTimePrint(time));
 
             // Find contacts
             findCollisions(cellMatrix, cimM);
@@ -153,10 +154,7 @@ public class ContractileParticleModel {
                     }
                 }
                 // Save pStep to print if needed
-                if (printCount == deltaTimePrintMult) {
-                    dynamicStr.append(getStepPrint(pStep));
-                    printCount = 0;
-                }
+                if (printCount == deltaTimePrintMult) dynamicStr.append(getStepPrint(p.getId(), pStep));
             }
             // Update particle list
             particles = nextParticleList;
@@ -165,6 +163,7 @@ public class ContractileParticleModel {
             if (dynamicStr.length() != 0) {
                 dynamicStr.append("*\n");
                 appendToFile(dynamicFilename, dynamicStr.toString());
+                printCount = 0;
             }
         }
 
@@ -178,10 +177,10 @@ public class ContractileParticleModel {
         return String.format("%.7E\n", time);
     }
 
-    private static String getStepPrint(Step<Vector2D> step) {
+    private static String getStepPrint(int id, Step<Vector2D> step) {
         // TODO: Check que precision es necesaria aca, si con 7E va bien
-        return String.format("%.7E %.7E %.7E %.7E %.7E\n",
-                step.getPos().getX(), step.getPos().getY(), step.getVel().getX(), step.getVel().getY(), step.getRadius());
+        return String.format("%d %.7E %.7E %.7E %.7E %.7E\n",
+                id, step.getPos().getX(), step.getPos().getY(), step.getVel().getX(), step.getVel().getY(), step.getRadius());
     }
 
     private static void appendToFile(String filename, String s) {
@@ -206,8 +205,9 @@ public class ContractileParticleModel {
     }
 
     private static void findCollisions(Map<Pair<Integer, Integer>, Set<Particle>> cellMatrix, int M) {
-        for (int cell = 0; cell < M * M; cell++) {
-            int row = cell / M + 1, col = cell % M + 1;
+        for (int cell = -M * (int) Math.ceil(M / 2.0); cell < M * M; cell++) {
+            Pair<Integer, Integer> rowColPair = integerDivision(cell, M);
+            int row = rowColPair.getKey(), col = rowColPair.getValue();
             // Iterate cell over itself
             findSetCollision(cellMatrix.getOrDefault(new Pair<>(row, col), new HashSet<>()));
 
@@ -305,8 +305,13 @@ public class ContractileParticleModel {
     }
 
     private static Pair<Integer, Integer> getRowColPair(double x, double y, int M, double cellWidth) {
-        int cellIndex = (int) (x / cellWidth) + (int) (y / cellWidth) * M;
-        return new Pair<>(cellIndex / M + 1, cellIndex % M + 1);
+        int cellIndex = (int) Math.floor(x / cellWidth) + (int) Math.floor(y / cellWidth) * M;
+        return integerDivision(cellIndex, M);
+    }
+
+    private static Pair<Integer, Integer> integerDivision(int y, int d) {
+        int q = (int) Math.floor((double) y / d);
+        return new Pair<>(q, y - d * q);
     }
 
     private static void argumentParsing() throws ArgumentException {
