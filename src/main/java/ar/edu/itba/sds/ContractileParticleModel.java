@@ -1,7 +1,5 @@
 package ar.edu.itba.sds;
 
-import ar.edu.itba.sds.algos2D.StepAlgorithm;
-import ar.edu.itba.sds.objects.AlgorithmType;
 import ar.edu.itba.sds.objects.Particle;
 import ar.edu.itba.sds.objects.Step;
 import ar.edu.itba.sds.objects.Vector2D;
@@ -13,7 +11,6 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.function.BiFunction;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -26,6 +23,7 @@ public class ContractileParticleModel {
     private static final String N_PARAM = "n";
 
     private static final String DYNAMIC_CONFIG_KEY = "dynamic_file";
+    private static final String EXIT_CONFIG_KEY = "exit_file";
 
     private static final String N_CONFIG_KEY = "N";
     private static final String L_CONFIG_KEY = "L";
@@ -47,7 +45,7 @@ public class ContractileParticleModel {
 
     private static final int ERROR_STATUS = 1;
 
-    private static String dynamicFilename;
+    private static String dynamicFilename, exitFilename;
     private static int n;
     private static double l, d;
     private static double rmin, rmax, vdmax, tau, beta;
@@ -75,9 +73,20 @@ public class ContractileParticleModel {
 
 
         // Cell index method variables
+        // TODO: Check si va bien con 3/2 L x 3/2 L, sino ver de iterar desde -2M a M * M
         int cimM = (int) (l / (2 * rmax));
+//        if (cimM % 2 != 0) cimM--; // Make sure M is even
         double cimCellWidth = l / cimM;
         Map<Pair<Integer, Integer>, Set<Particle>> cellMatrix = new HashMap<>();
+
+        // Delete exitFile if already exists
+        try {
+            Files.deleteIfExists(Paths.get(exitFilename));
+        } catch (IOException e) {
+            System.err.printf("Could not delete %s\n", exitFilename);
+            System.exit(ERROR_STATUS);
+            return;
+        }
 
         // Parse dynamic file to initialize particle list
         List<Particle> particles;
@@ -88,7 +97,7 @@ public class ContractileParticleModel {
             Particle.setSide(l);
             Particle.setDoorWidth(d);
             // Create particle list
-            particles = createParticleList(reader, n, rmin, cellMatrix, cimM, cimCellWidth);
+            particles = createParticleList(reader, n, cellMatrix, cimM, cimCellWidth);
         } catch (FileNotFoundException e) {
             System.err.println("Dynamic file not found");
             System.exit(ERROR_STATUS);
@@ -102,36 +111,103 @@ public class ContractileParticleModel {
         long startTime = System.currentTimeMillis();
 
         // Simulation
+        long printCount = 0;
         while (!particles.isEmpty()) {
-            // Find contacts and calculate Ve
+            // Instantiate new String Builders
+            StringBuilder exitStr = new StringBuilder();
+            StringBuilder dynamicStr = new StringBuilder();
 
+            // Update time
+            time += deltaTimeSim;
+            // Update print count
+            printCount++;
+            // Save time to print if needed
+            if (printCount == deltaTimePrintMult) dynamicStr.append(getTimePrint(time));
 
-            // Adjust radii
+            // Find contacts
+            findCollisions(cellMatrix, cimM);
 
-            // Compute Vd
-
-            // Update speed and position
-
-            // Print to file
+            List<Particle> nextParticleList = new ArrayList<>();
+            // Iterate over particle list
+            for (Particle p : particles) {
+                // Compute escape vel
+                p.updateEscapeVel(vdmax);
+                // Update radius
+                p.updateRadius(rmin, rmax, tau, deltaTimeSim);
+                // Compute target vel
+                p.updateTargetVel(vdmax, rmin, rmax, beta);
+                // Save previous rowCol for particle in cell matrix
+                final Pair<Integer, Integer> curRowCol = getRowColPair(p.getPos().getX(), p.getPos().getY(), cimM, cimCellWidth);
+                // Update speed and position
+                final Step<Vector2D> pStep = p.updateState(time, deltaTimeSim);
+                if (p.reachedGoal()) {
+                    mapSetRemove(cellMatrix, curRowCol, p);
+                    exitStr.append(getTimePrint(time));
+                } else {
+                    nextParticleList.add(p);
+                    // Calculate new rowCol for particle in cell matrix
+                    final Pair<Integer, Integer> newRowCol = getRowColPair(p.getPos().getX(), p.getPos().getY(), cimM, cimCellWidth);
+                    // Update particle in cell matrix if needed
+                    if (!newRowCol.equals(curRowCol)) {
+                        mapSetRemove(cellMatrix, curRowCol, p);
+                        mapSetAdd(cellMatrix, newRowCol, p);
+                    }
+                }
+                // Save pStep to print if needed
+                if (printCount == deltaTimePrintMult) dynamicStr.append(getStepPrint(p.getId(), pStep));
+            }
+            // Update particle list
+            particles = nextParticleList;
+            // Append to files
+            if (exitStr.length() != 0) appendToFile(exitFilename, exitStr.toString());
+            if (dynamicStr.length() != 0) {
+                dynamicStr.append("*\n");
+                appendToFile(dynamicFilename, dynamicStr.toString());
+                printCount = 0;
+            }
         }
-//        final StepAlgorithm algorithm = StepAlgorithm.algorithmBuilder(algorithmType, f, deltaTimeSim, r0, v0, mass, d, n);
-//        Step<Vector2D> curStep = algorithm.getLastStep();
-//        printStep(curStep);
-//        while (algorithm.hasNext()) {
-//            curStep = algorithm.next();
-//            if (doubleMultiple(curStep.getTime(), deltaTimePrint)) {
-//                printStep(curStep);
-//            }
-//        }
 
         // Print simulation time
         long endTime = System.currentTimeMillis();
         System.out.printf("Simulation time \t\t ⏱  %g seconds\n", (endTime - startTime) / 1000.0);
     }
 
-    private static void findContacts(List<Particle> particleList, Map<Pair<Integer, Integer>, Set<Particle>> cellMatrix, int M, double cellWidth) {
-        for (int cell = 0; cell < M * M; cell++) {
-            int row = cell / M + 1, col = cell % M + 1;
+    private static String getTimePrint(double time) {
+        // TODO: Check que precision es necesaria aca, si con 7E va bien
+        return String.format("%.7E\n", time);
+    }
+
+    private static String getStepPrint(int id, Step<Vector2D> step) {
+        // TODO: Check que precision es necesaria aca, si con 7E va bien
+        return String.format("%d %.7E %.7E %.7E %.7E %.7E\n",
+                id, step.getPos().getX(), step.getPos().getY(), step.getVel().getX(), step.getVel().getY(), step.getRadius());
+    }
+
+    private static void appendToFile(String filename, String s) {
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(filename, true))) {
+            writer.write(s);
+        } catch (IOException e) {
+            System.err.printf("Error writing %s file\n", filename);
+            System.exit(ERROR_STATUS);
+        }
+    }
+
+    private static void mapSetRemove(Map<Pair<Integer, Integer>, Set<Particle>> cellMatrix, Pair<Integer, Integer> key, Particle p) {
+        final Set<Particle> set = cellMatrix.getOrDefault(key, new HashSet<>());
+        set.remove(p);
+        cellMatrix.put(key, set);
+    }
+
+    private static void mapSetAdd(Map<Pair<Integer, Integer>, Set<Particle>> cellMatrix, Pair<Integer, Integer> key, Particle p) {
+        final Set<Particle> set = cellMatrix.getOrDefault(key, new HashSet<>());
+        set.add(p);
+        cellMatrix.put(key, set);
+    }
+
+    private static void findCollisions(Map<Pair<Integer, Integer>, Set<Particle>> cellMatrix, int M) {
+        for (int cell = -M * (int) Math.ceil(M / 2.0); cell < M * M; cell++) {
+            Pair<Integer, Integer> rowColPair = integerDivision(cell, M);
+            int row = rowColPair.getKey(), col = rowColPair.getValue();
             // Iterate cell over itself
             findSetCollision(cellMatrix.getOrDefault(new Pair<>(row, col), new HashSet<>()));
 
@@ -146,57 +222,36 @@ public class ContractileParticleModel {
 
     // Collisions in the same set
     private static void findSetCollision(Set<Particle> set) {
+        final Vector2D leftVertex = new Vector2D((l - d) / 2, 0);
+        final Vector2D rightVertex = new Vector2D((l + d) / 2, 0);
+
         for (Particle p1 : set) {
-            boolean contacted = false;
-            Vector2D eij = new Vector2D();
             for (Particle p2 : set) {
                 int c = p1.compareTo(p2);
-                // TODO: Do wall collision correctly
                 if (c == 0) {
                     final Vector2D pos = p1.getPos();
-                    // Check for wall collision
-                    if (pos.getX() - p1.getR() < 0) {
-                        // Left wall collision
-                        contacted = true;
-                        eij = Vector2D.sum(eij, Vector2D.getProjection(pos, new Vector2D(0, pos.getY())));
-                    } else if (pos.getX() + p1.getR() > l) {
-                        // Right wall collision
-                        contacted = true;
-                        eij = Vector2D.sum(eij, Vector2D.getProjection(pos, new Vector2D(l, pos.getY())));
-                    }
-                    if (pos.getY() + p1.getR() > l) {
-                        // Top wall collision
-                        contacted = true;
-                        eij = Vector2D.sum(eij, Vector2D.getProjection(pos, new Vector2D(pos.getX(), l)));
-                    } else if (pos.getY() - p1.getR() < 0) {
-                        // TODO: Change this to real values
-                        Vector2D leftTarget = new Vector2D(), rightTarget = new Vector2D();
-                        // Bottom wall collision
-                        if (pos.getX() < leftTarget.getX() || pos.getX() > rightTarget.getX()) {
-                            // No door below
-                            contacted = true;
-                            eij = Vector2D.sum(eij, Vector2D.getProjection(pos, new Vector2D(pos.getX(), 0)));
-                        } else if (Vector2D.mod(pos, leftTarget) < p1.getR()) {
-                            // Door below, contact with left edge
-                            contacted = true;
-                            eij = Vector2D.sum(eij, Vector2D.getProjection(pos, leftTarget));
-                        } else if (Vector2D.mod(pos, rightTarget) < p1.getR()) {
-                            // Door below, contact with right edge
-                            contacted = true;
-                            eij = Vector2D.sum(eij, Vector2D.getProjection(pos, rightTarget));
-                        }
-                    }
+                    double radius = p1.getR();
+                    // Left wall collision
+                    if (pos.getX() < radius) p1.addCollision(new Vector2D(0, pos.getY()));
+                    // Right wall collision
+                    else if (pos.getX() > l - radius) p1.addCollision(new Vector2D(l, pos.getY()));
+
+                    // Top wall collision
+                    if (pos.getY() > l - radius) p1.addCollision(new Vector2D(pos.getX(), l));
+                    // Bottom wall collision
+                    else if ((pos.getX() < leftVertex.getX() || pos.getX() > rightVertex.getX()) &&
+                            (-radius < pos.getY() && pos.getY() < radius)) p1.addCollision(new Vector2D(pos.getX(), 0));
+                    // Left vertex collision
+                    else if (Vector2D.dist(pos, leftVertex) < radius) p1.addCollision(leftVertex);
+                    // Right vertex collision
+                    else if (Vector2D.dist(pos, rightVertex) < radius) p1.addCollision(rightVertex);
                 } else if (c > 0) {
                     // Check for particle collision
                     if (p1.borderDistance(p2) < 0) {
-                        contacted = true;
-                        eij = Vector2D.sum(eij, Vector2D.getProjection(p1.getPos(), p2.getPos()));
+                        p1.addCollision(p2.getPos());
+                        p2.addCollision(p1.getPos());
                     }
                 }
-            }
-            // TODO: Cannot set Ve, could have other collisions. What do we do?
-            if (contacted) {
-                // Set Ve
             }
         }
     }
@@ -204,19 +259,17 @@ public class ContractileParticleModel {
     // Collisions between different sets
     private static void findSetCollision(Set<Particle> set1, Set<Particle> set2) {
         for (Particle p1 : set1) {
-            boolean contacted = false;
-            Vector2D eij = new Vector2D();
             for (Particle p2 : set2) {
                 // Check for particle collision
                 if (p1.borderDistance(p2) < 0) {
-                    contacted = true;
-                    eij = Vector2D.sum(eij, Vector2D.getProjection(p1.getPos(), p2.getPos()));
+                    p1.addCollision(p2.getPos());
+                    p2.addCollision(p1.getPos());
                 }
             }
         }
     }
 
-    private static List<Particle> createParticleList(BufferedReader reader, int n, double radius,
+    private static List<Particle> createParticleList(BufferedReader reader, int n,
                                                      Map<Pair<Integer, Integer>, Set<Particle>> cellMatrix, int M, double cellWidth)
             throws IOException {
 
@@ -228,17 +281,17 @@ public class ContractileParticleModel {
 
             // Values has format (x, y, vx, vy)
             final String[] values = line.split(" ");
-            double x = Double.parseDouble(values[0]), y = Double.parseDouble(values[1]);
-            double vx = Double.parseDouble(values[2]), vy = Double.parseDouble(values[3]);
+            int id = Integer.parseInt(values[0]);
+            double x = Double.parseDouble(values[1]), y = Double.parseDouble(values[2]);
+            double vx = Double.parseDouble(values[3]), vy = Double.parseDouble(values[4]);
+            double radius = Double.parseDouble(values[5]);
 
-            Particle p = new Particle(i, new Vector2D(x, y), new Vector2D(vx, vy), radius);
+            Particle p = new Particle(id, new Vector2D(x, y), new Vector2D(vx, vy), radius);
             particles.add(p);
 
             // Add particle to CIM matrix
             Pair<Integer, Integer> rowColPair = getRowColPair(x, y, M, cellWidth);
-            final Set<Particle> set = cellMatrix.getOrDefault(rowColPair, new HashSet<>());
-            set.add(p);
-            cellMatrix.put(rowColPair, set);
+            mapSetAdd(cellMatrix, rowColPair, p);
         }
 
         // Parse * separator
@@ -252,25 +305,13 @@ public class ContractileParticleModel {
     }
 
     private static Pair<Integer, Integer> getRowColPair(double x, double y, int M, double cellWidth) {
-        int cellIndex = (int) (x / cellWidth) + (int) (y / cellWidth) * M;
-        return new Pair<>(cellIndex / M + 1, cellIndex % M + 1);
+        int cellIndex = (int) Math.floor(x / cellWidth) + (int) Math.floor(y / cellWidth) * M;
+        return integerDivision(cellIndex, M);
     }
 
-    private static void printStep(Step<Vector2D> step) {
-        try {
-            // TODO: Check que precision es necesaria aca, si con 7E va bien
-            appendToFile(dynamicFilename, String.format("%.7E\n%.7E %.7E %.7E %.7E\n*\n",
-                    step.getTime(), step.getPos().getX(), step.getPos().getY(), step.getVel().getX(), step.getVel().getY()));
-        } catch (IOException e) {
-            System.err.println("Error writing dynamic file");
-            System.exit(ERROR_STATUS);
-        }
-    }
-
-    private static void appendToFile(String filename, String s) throws IOException {
-        try(BufferedWriter writer = new BufferedWriter(new FileWriter(filename, true))) {
-            writer.write(s);
-        }
+    private static Pair<Integer, Integer> integerDivision(int y, int d) {
+        int q = (int) Math.floor((double) y / d);
+        return new Pair<>(q, y - d * q);
     }
 
     private static void argumentParsing() throws ArgumentException {
@@ -280,6 +321,7 @@ public class ContractileParticleModel {
         try(BufferedReader reader = new BufferedReader(new FileReader(configFilename))) {
             JSONObject config = new JSONObject(reader.lines().collect(Collectors.joining()));
             dynamicFilename = config.getString(DYNAMIC_CONFIG_KEY);
+            exitFilename = config.getString(EXIT_CONFIG_KEY);
 
             // get int params
             n = getConfigInt(config, N_CONFIG_KEY, v -> v > 0);

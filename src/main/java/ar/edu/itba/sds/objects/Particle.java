@@ -13,8 +13,7 @@ public class Particle implements Comparable<Particle> {
     private Vector2D vel;
     private double r;
     private Vector2D target;
-    private Vector2D escapeVel;
-    private boolean doorCrossed;
+    private Vector2D eij, escapeVel, targetVel;
 
     public static void setSide(double l) {
         Particle.l = l;
@@ -39,8 +38,8 @@ public class Particle implements Comparable<Particle> {
         this.pos = pos;
         this.vel = vel;
         this.r = r;
-        this.escapeVel = null;
-        this.doorCrossed = false;
+        this.targetVel = this.escapeVel = null;
+        this.eij = new Vector2D();
         this.target = new Vector2D();
         updateTarget();
     }
@@ -48,7 +47,8 @@ public class Particle implements Comparable<Particle> {
     // TODO: Check if we should do this or what paper says: take a random point in door instead of closest one
     private void updateTarget() {
         double targetY, targetWidth, targetMargin;
-        if (doorCrossed) {
+        // TODO: Check si vale poner y < 0 o si hay algun caso en el que no aplique
+        if (pos.getY() < 0) {
             targetY = FAR_TARGET_Y;
             targetWidth = FAR_TARGET_WIDTH;
             targetMargin = 0;
@@ -63,6 +63,58 @@ public class Particle implements Comparable<Particle> {
 
         if (pos.getX() < leftTargetX) target.setCoordinates(leftTargetX, targetY);
         else target.setCoordinates(Math.min(pos.getX(), rightTargetX), targetY);
+    }
+
+    // Accumulate collision with otherPos in eij
+    public void addCollision(Vector2D otherPos) {
+        this.eij = Vector2D.sum(eij, Vector2D.getProjection(pos, otherPos));
+    }
+
+    public void updateEscapeVel(double veMod) {
+        // TODO: Check si puede pasar que eij = (0,0) Habiendo habido colisiones
+        if (this.eij.equals(new Vector2D())) {
+            this.escapeVel = null;
+            return;
+        }
+
+        this.escapeVel = Vector2D.scalar(this.eij, veMod / this.eij.mod());
+        this.eij.setCoordinates(0, 0);
+    }
+
+    public void updateRadius(double rmin, double rmax, double tau, double dt) {
+        // If there were collisions, contract
+        if (this.escapeVel != null) {
+            this.r = rmin;
+            return;
+        }
+        // Update radius
+        this.r += rmax / (tau / dt);
+
+        // If max radius reached, keep it there
+        if (this.r >= rmax) this.r = rmax;
+    }
+
+    public void updateTargetVel(double vdmax, double rmin, double rmax, double beta) {
+        double vMod = vdmax * Math.pow((r - rmin) / (rmax - rmin), beta);
+        Vector2D dif = Vector2D.sub(target, pos);
+        Vector2D vDir = Vector2D.scalar(dif, 1 / dif.mod());
+        this.targetVel = Vector2D.scalar(vDir, vMod);
+    }
+
+    public Step<Vector2D> updateState(double curTime, double dt) {
+        // If escape vel is not null -> r = rmin -> collision
+        // Update velocity
+        this.vel = (this.escapeVel != null) ? this.escapeVel : this.targetVel;
+        // Update position
+        this.pos = Vector2D.sum(this.pos, Vector2D.scalar(this.vel, dt));
+        // Update target
+        updateTarget();
+        // Build Step
+        return new Step<>(curTime, this.r, this.pos, this.vel);
+    }
+
+    public boolean reachedGoal() {
+        return pos.getY() < FAR_TARGET_Y;
     }
 
     public double centerDistance(Particle other) {
@@ -87,6 +139,10 @@ public class Particle implements Comparable<Particle> {
 
     public double getR() {
         return r;
+    }
+
+    public int getId() {
+        return id;
     }
 
     @Override
@@ -114,6 +170,10 @@ public class Particle implements Comparable<Particle> {
                 ", pos=" + pos +
                 ", vel=" + vel +
                 ", r=" + r +
+                ", target=" + target +
+                ", eij=" + eij +
+                ", escapeVel=" + escapeVel +
+                ", targetVel=" + targetVel +
                 '}';
     }
 }

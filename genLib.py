@@ -54,15 +54,15 @@ def particles(n, side, r):
     return part_list
 
 #Generate dynamic and static files, reading N and L from arg
-def data_files(side, particles, dynamic_filename):
+def data_files(side, particles, radius, dynamic_filename):
     dynamic_file = open(dynamic_filename, "w")
     dynamic_file.write('0')       # dynamic time
 
     for p in particles:
         # Write dynamic file
         # TODO: Check that 7E precision is OK for this system
-        dynamic_file.write('\n%.7E %.7E %.7E %.7E' % (p.x, p.y, p.vx, p.vy))
+        dynamic_file.write('\n%d %.7E %.7E %.7E %.7E %.7E' % (p.id, p.x, p.y, p.vx, p.vy, p.r))
 
-    dynamic_file.write('\n*')       # dynamic separator
+    dynamic_file.write('\n*\n')       # dynamic separator
 
     dynamic_file.close()

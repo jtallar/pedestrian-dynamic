@@ -1,5 +1,6 @@
 {
     "dynamic_file": "dynamic.txt",
+    "exit_file": "exit.txt",
     "animation_file": "simu.xyz",
 
     "N": 200,
@@ -10,7 +11,7 @@
     "rmax": 0.32,
     "vdmax": 1.55,
     "tau": 0.5,
-    "beta": 0.9,
+    "beta": 1.0,
 
     "use_seed": false,
     "seed": 1534342,

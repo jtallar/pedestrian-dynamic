@@ -2,19 +2,23 @@ package ar.edu.itba.sds.objects;
 
 public class Step <T> {
     private final double time;
+    private final double radius;
     private final T pos;
     private final T vel;
-    private final T acc;
 
-    public Step(double time, T pos, T vel, T acc) {
+    public Step(double time, double radius, T pos, T vel) {
         this.time = time;
+        this.radius = radius;
         this.pos = pos;
         this.vel = vel;
-        this.acc = acc;
     }
 
     public double getTime() {
         return time;
+    }
+
+    public double getRadius() {
+        return radius;
     }
 
     public T getPos() {
@@ -23,9 +27,5 @@ public class Step <T> {
 
     public T getVel() {
         return vel;
-    }
-
-    public T getAcc() {
-        return acc;
     }
 }
