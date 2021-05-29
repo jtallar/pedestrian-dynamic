@@ -73,9 +73,7 @@ public class ContractileParticleModel {
 
 
         // Cell index method variables
-        // TODO: Check si va bien con 3/2 L x 3/2 L, sino ver de iterar desde -2M a M * M
         int cimM = (int) (l / (2 * rmax));
-//        if (cimM % 2 != 0) cimM--; // Make sure M is even
         double cimCellWidth = l / cimM;
         Map<Pair<Integer, Integer>, Set<Particle>> cellMatrix = new HashMap<>();
 

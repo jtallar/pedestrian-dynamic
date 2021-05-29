@@ -47,7 +47,6 @@ public class Particle implements Comparable<Particle> {
     // TODO: Check if we should do this or what paper says: take a random point in door instead of closest one
     private void updateTarget() {
         double targetY, targetWidth, targetMargin;
-        // TODO: Check si vale poner y < 0 o si hay algun caso en el que no aplique
         if (pos.getY() < 0) {
             targetY = FAR_TARGET_Y;
             targetWidth = FAR_TARGET_WIDTH;
@@ -71,7 +70,6 @@ public class Particle implements Comparable<Particle> {
     }
 
     public void updateEscapeVel(double veMod) {
-        // TODO: Check si puede pasar que eij = (0,0) Habiendo habido colisiones
         if (this.eij.equals(new Vector2D())) {
             this.escapeVel = null;
             return;
