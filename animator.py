@@ -14,7 +14,7 @@ def write_corners(ovito_file, N, Lx, Ly):
     ovito_file.write(corners)
 
 def get_ovito_line(r, x, y, p_id, rmin, rmax):
-    return str(r)+' '+str(x)+' '+str(y)+' '+str(p_id)+' ' + str(int(255 * (1 - (rmax - r) / (rmax - rmin)))) + ' 0 0' +'\n'
+    return str(r)+' '+str(x)+' '+str(y)+' '+str(p_id)+' ' + str(int(255 * (rmax - r) / (rmax - rmin))) + ' 0 0' +'\n'
 
 # Read params from config.json
 with open("config.json") as file:
@@ -48,12 +48,11 @@ dynamic_file = open(dynamic_filename, "r")
 
 restart = True
 target_count = delta_t_mult
+p_count, p_lines = 0, ''
 for linenum, line in enumerate(dynamic_file):
     if restart:
         target_count += 1
         time = float(line.rstrip())
-        if target_count >= delta_t_mult:
-            write_corners(ovito_file, N, L, L)
         restart = False
         p_id = 0
         continue
@@ -61,6 +60,9 @@ for linenum, line in enumerate(dynamic_file):
         restart = True
         if target_count >= delta_t_mult:
             target_count = 0
+            write_corners(ovito_file, p_count, L, L)
+            ovito_file.write(p_lines)
+            p_count, p_lines = 0, ''
         continue
     
     if target_count >= delta_t_mult:
@@ -68,7 +70,8 @@ for linenum, line in enumerate(dynamic_file):
         p_id = int(line_vec[0])
         (x,y,r) = (float(line_vec[1]), float(line_vec[2]), float(line_vec[5]))
         (vx,vy) = (float(line_vec[3]), float(line_vec[4]))
-        ovito_file.write(get_ovito_line(r, x, y, p_id, rmin, rmax))
+        p_lines += get_ovito_line(r, x, y, p_id, rmin, rmax)
+        p_count += 1
 
 print(f'Generated {animation_filename}')
 
