@@ -112,8 +112,14 @@ public class ContractileParticleModel {
         // Simulation
         long printCount = 0;
         while (!particles.isEmpty()) {
+            // Instantiate new String Builders
+            StringBuilder exitStr = new StringBuilder();
+            StringBuilder dynamicStr = new StringBuilder();
+
             // Update time
             time += deltaTimeSim;
+            // Update print count
+            printCount++;
 
             // Find contacts
             findCollisions(cellMatrix, cimM);
@@ -133,7 +139,7 @@ public class ContractileParticleModel {
                 final Step<Vector2D> pStep = p.updateState(time, deltaTimeSim);
                 if (p.reachedGoal()) {
                     mapSetRemove(cellMatrix, curRowCol, p);
-                    // TODO: Print time to exitFilename
+                    exitStr.append(getTimePrint(time));
                 } else {
                     nextParticleList.add(p);
                     // Calculate new rowCol for particle in cell matrix
@@ -145,19 +151,44 @@ public class ContractileParticleModel {
                     }
                 }
                 // Save pStep to print if needed
-                printCount++;
                 if (printCount == deltaTimePrintMult) {
-                    // TODO: Print pStep to dynamicFilename
+                    dynamicStr.append(getStepPrint(pStep));
                     printCount = 0;
                 }
             }
             // Update particle list
             particles = nextParticleList;
+            // Append to files
+            if (exitStr.length() != 0) appendToFile(exitFilename, exitStr.toString());
+            if (dynamicStr.length() != 0) {
+                dynamicStr.append("*\n");
+                appendToFile(dynamicFilename, dynamicStr.toString());
+            }
         }
 
         // Print simulation time
         long endTime = System.currentTimeMillis();
         System.out.printf("Simulation time \t\t ⏱  %g seconds\n", (endTime - startTime) / 1000.0);
+    }
+
+    private static String getTimePrint(double time) {
+        // TODO: Check que precision es necesaria aca, si con 7E va bien
+        return String.format("%.7E\n", time);
+    }
+
+    private static String getStepPrint(Step<Vector2D> step) {
+        // TODO: Check que precision es necesaria aca, si con 7E va bien
+        return String.format("%.7E %.7E %.7E %.7E %.7E\n",
+                step.getPos().getX(), step.getPos().getY(), step.getVel().getX(), step.getVel().getY(), step.getRadius());
+    }
+
+    private static void appendToFile(String filename, String s) {
+        try(BufferedWriter writer = new BufferedWriter(new FileWriter(filename, true))) {
+            writer.write(s);
+        } catch (IOException e) {
+            System.err.printf("Error writing %s file\n", filename);
+            System.exit(ERROR_STATUS);
+        }
     }
 
     private static void mapSetRemove(Map<Pair<Integer, Integer>, Set<Particle>> cellMatrix, Pair<Integer, Integer> key, Particle p) {
@@ -273,23 +304,6 @@ public class ContractileParticleModel {
     private static Pair<Integer, Integer> getRowColPair(double x, double y, int M, double cellWidth) {
         int cellIndex = (int) (x / cellWidth) + (int) (y / cellWidth) * M;
         return new Pair<>(cellIndex / M + 1, cellIndex % M + 1);
-    }
-
-    private static void printStep(Step<Vector2D> step) {
-        try {
-            // TODO: Check que precision es necesaria aca, si con 7E va bien
-            appendToFile(dynamicFilename, String.format("%.7E\n%.7E %.7E %.7E %.7E\n*\n",
-                    step.getTime(), step.getPos().getX(), step.getPos().getY(), step.getVel().getX(), step.getVel().getY()));
-        } catch (IOException e) {
-            System.err.println("Error writing dynamic file");
-            System.exit(ERROR_STATUS);
-        }
-    }
-
-    private static void appendToFile(String filename, String s) throws IOException {
-        try(BufferedWriter writer = new BufferedWriter(new FileWriter(filename, true))) {
-            writer.write(s);
-        }
     }
 
     private static void argumentParsing() throws ArgumentException {
