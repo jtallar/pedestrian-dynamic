@@ -29,6 +29,8 @@ if len(sys.argv) >= 2:
     config["dynamic_file"] = sys.argv[1]
 if len(sys.argv) >= 3:
     config["N"] = sys.argv[2]
+if len(sys.argv) >= 4:
+    config["d"] = sys.argv[3]
 
 dynamic_filename = utils.read_config_param(
     config, "dynamic_file", lambda el : el, lambda el : True)
