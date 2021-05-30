@@ -1,7 +1,7 @@
 #!/bin/bash
 if [ "$#" -ne 3 ]; then
     echo "Illegal number of parameters." 
-    echo "Run with ./sameN.sh N d rep"
+    echo "Run with ./same.sh N d rep"
     exit 1
 fi
 

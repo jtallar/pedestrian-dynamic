@@ -33,9 +33,9 @@ Run `python3 generator.py [dynamic_filename] [N]`.
 If provided, `dynamic_filename` and `N` parameters overwrite config params
 
 ## Simulation
-To generate executable and run damped oscillator simulation
+To generate executable and run pedestrian dynamic simulation
 1. Run `./prepare.sh` in root to generate executables (only required once).
-2. Run `./target/tp5-simu-1.0/damped-osc.sh -Dn=N -Dd=d -Ddynamic=dynamic.txt -Dexit=exit.txt`. Parameters from `config.json` can be overwritten by using `n`, `d`, `dynamic` and `exit` properties.
+2. Run `./target/tp5-simu-1.0/pedestrian-dynamic.sh -Dn=N -Dd=d -Ddynamic=dynamic.txt -Dexit=exit.txt`. Parameters from `config.json` can be overwritten by using `n`, `d`, `dynamic` and `exit` properties.
 
 Output will be appended to `dynamic_file`, showing time and particle position and velocity for each timestep dt_print. Particle exit times will be printed to `exit_file` with a precision of dt.
 
@@ -57,29 +57,6 @@ Configure the file column mapping as follows:
    - Column 5 - Color - R
    - Column 6 - Color - G
    - Column 7 - Color - B
-
-## Analysis Tools
-
-### analysisOsc.py
-Generate plots and metrics given a single simulation file as input.
-Run `python3 analysisOsc.py [file_1 file_2 ...]`, using parameters from `config.json`.
-
-If one or more filenames are provided, analysis will be performed individually and then condensed for multiple simulations. This can be used to provide one simulation file for each available algorithm. If plot is false, then no graphs are plotted.
-
-Metrics calculated for each simulation are:
-- ECM
-
-Plots shown are:
-- Analytic trajectory + estimated trajectory for each simulation file.
-
-### multipleDtOsc.sh
-This script can be used to run `damped-osc` simulation multiple times, given a starting timestep value, a step to increase dt each iteration and a maximum dt.
-`./multipleDtOsc.sh dt_start dt_step dt_end`
-
-The script runs three simulations for each available dt from `dt_start` to the highest `dt_start + K * dt_step` that is lower or equal than `dt_end` using Verlet, Beeman and Gear Predictor-Corrector 5 respectively. Then, it runs `analysisOsc.py` with the three output datafiles as parameters.
-
-### aux_analysisOscDelta.py
-Contains obtained values using the previously mentioned script. It is used to plot ECM = f(dt) for the three algorithms at once. Values should be copied manually to the corresponding lists.
 
 ## Analysis Tools
 
@@ -111,17 +88,17 @@ And some more plots are shown:
 - Average |ET(t=0) - ET(t>0)| = f(t) with error bars for each dt
 - Multiple particle trajectories (both with dt and v0 in legend)
 
-### multipleDtRad.sh
-This script can be used to run simulation multiple times, given a starting timestep value, a step to increase dt each iteration, a maximum dt and a number of repetitions.
-`./multipleDtRad.sh dt_start dt_step dt_end rep`
+### same.sh
+This script can be used to run `pedestrian-dynamic` simulation multiple times with the same params, given N, d and a number of repetitions.
+`./same.sh N d rep`
 
-The script runs `rep` simulations for each available dt from `dt_start` to the highest `dt_start + K * dt_step` that is lower or equal than `dt_end`. Initial velocity is set to `10e3`. Then, it runs `analysisRad.py` with the `rep` output datafiles as parameters for each dt.
+The script runs `rep` simulations with the parameters `N` and `d`. Then, it runs `analysis.py` with the output datafiles as parameters.
 
-### multipleV0.sh
-This script can be used to run `radiation-interaction` simulation multiple times, given a step to increase v0 each iteration and a number of repetitions.
-`./multipleV0.sh v0_step rep`
+### multiple.sh
+This script can be used to run `pedestrian-dynamic` simulation multiple times with different params, given a number of repetitions.
+`./multiple.sh rep`
 
-The script runs `rep` simulations for each available v0 from `10e3` to the highest `10e3 + K * v0_step` that is lower or equal than `100e3`. Timestep is set to `1e-16`. Then, it runs `analysisRad.py` with the `rep` output datafiles as parameters for each v0.
+The script runs `rep` simulations for each of the following (N;d) params: (200;1.2), (260;1.8), (320;2.4), (380;3.0). Then, it runs `analysis.py` with the output datafiles as parameters.
 
 ### aux_analysisRadVel.py
 Contains obtained values using the previously mentioned script. It is used to plot L = f(V0) for different initial velocities at once and a probability distribution for each ending motive. Values should be copied manually to the corresponding lists.
