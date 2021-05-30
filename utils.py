@@ -114,6 +114,7 @@ def calculate_regression(x_values, y_values, plot_error=False):
     error_list = []
     c_list = []
 
+    # TODO: Ver por dónde anda el c
     for c in np.arange(-2, 2, 0.0001):
         error_sum = 0
         for i in range(0, len(x_values)):
@@ -139,9 +140,16 @@ def calculate_regression(x_values, y_values, plot_error=False):
 
     return min_c, min_error
 
+# Returns (d - cr) ** 1.5 applied to each d
+def transform_d_for_q(d_values, rmed_values):
+    C = 1 # TODO: Definir valor de constante
+    EXP = 1.5
+    x_values = []
+    for d, rmed in zip(d_values, rmed_values):
+        x_values.append((d - C * rmed) ** EXP)
+    return x_values
+
 def plot_values_with_adjust(x_values, x_label, y_values, y_label, precision=2, sci=True, min_val=None, max_val=None, plot=True, save_name=None):
-    # adj_coef = np.polyfit(x_values, y_values, 1)
-    # poly1d_fn = np.poly1d(adj_coef)
 
     c, err = calculate_regression(x_values, y_values, plot)
     print(c, err)
