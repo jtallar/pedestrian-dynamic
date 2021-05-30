@@ -19,6 +19,7 @@ public class ContractileParticleModel {
     private static final String CONFIG_PARAM = "config";
 
     private static final String DYNAMIC_FILE_PARAM = "dynamic";
+    private static final String EXIT_FILE_PARAM = "exit";
     private static final String D_PARAM = "d";
     private static final String N_PARAM = "n";
 
@@ -68,7 +69,7 @@ public class ContractileParticleModel {
         final Random rand = new Random(seed);
 
         System.out.printf("Running with N=%d and d=%.3E. \nOutput to ", n, d);
-        System.err.printf("%s", dynamicFilename);
+        System.err.printf("%s %s", dynamicFilename, exitFilename);
         System.out.print("\n\n");
 
 
@@ -351,6 +352,11 @@ public class ContractileParticleModel {
         String dynamicFilenameProp = properties.getProperty(DYNAMIC_FILE_PARAM);
         if (dynamicFilenameProp != null) {
             dynamicFilename = dynamicFilenameProp;
+        }
+
+        String exitFilenameProp = properties.getProperty(EXIT_FILE_PARAM);
+        if (exitFilenameProp != null) {
+            exitFilename = exitFilenameProp;
         }
 
         String dProp = properties.getProperty(D_PARAM);
