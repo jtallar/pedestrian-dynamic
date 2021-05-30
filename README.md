@@ -10,6 +10,7 @@
 ## Configuration
 Everything is configured by modifying `config.json`. Available configuration keys are:
    - `dynamic_file`: dynamic file filepath
+   - `exit_file`: exit file filepath por all exit times
    - `animation_file`: animation file filepath
    - `N`: number of pedestrians in the room
    - `L`: room side, room will be of L x L
@@ -22,7 +23,7 @@ Everything is configured by modifying `config.json`. Available configuration key
    - `use_seed`: if true use fixed seed, if false use nanoseconds
    - `seed`: fixed seed value
    - `dt_print_mult`: integer timestep multiplier for simulation prints to file. dt_print = dt * dt_print_mult
-   - `dt_anim_mult`: integer timestep multiplier for animation prints to file. dt_anim = dt * dt_anim_mult
+   - `dt_anim_mult`: integer timestep multiplier for animation prints to file. dt_anim = dt * dt_print_mult * dt_anim_mult
    - `plot`: determines whether to plot or not single analysis, must be true or false
 
 ## Particle generator
@@ -34,9 +35,28 @@ If provided, `dynamic_filename` and `N` parameters overwrite config params
 ## Simulation
 To generate executable and run damped oscillator simulation
 1. Run `./prepare.sh` in root to generate executables (only required once).
-2. Run `./target/tp5-simu-1.0/damped-osc.sh -Dalgo=algo -Ddt=dt`. Parameters from `config.json` can be overwritten by using `algo` and `dt` properties.
+2. Run `./target/tp5-simu-1.0/damped-osc.sh -Dn=N -Dd=d -Ddynamic=dynamic.txt -Dexit=exit.txt`. Parameters from `config.json` can be overwritten by using `n`, `d`, `dynamic` and `exit` properties.
 
-Output will be printed to `dynamic_file`, showing time and particle position and velocity for each timestep.
+Output will be appended to `dynamic_file`, showing time and particle position and velocity for each timestep dt_print. Particle exit times will be printed to `exit_file` with a precision of dt.
+
+## Animation Tool
+Generates `simulation_file` using information from `dynamic_file`.
+Run `python3 animator.py [dynamic_file] [N] [d]`, using the parameters from `config.json`. If provided, params overwrite `dynamic_file` and `d` from config.
+
+To view the animation, you must open `simulation_file` with Ovito:
+`./bin/ovito simulation_file`. 
+
+Particle color shows particle radius, where particles with `rmin` are red (many contacts) and particles with `rmax` are black (fewer contacts).
+
+### Column Mapping 
+Configure the file column mapping as follows:
+   - Column 1 - Radius
+   - Column 2 - Position - X
+   - Column 3 - Position - Y
+   - Column 4 - Particle Identifier
+   - Column 5 - Color - R
+   - Column 6 - Color - G
+   - Column 7 - Color - B
 
 ## Analysis Tools
 
@@ -60,34 +80,6 @@ The script runs three simulations for each available dt from `dt_start` to the h
 
 ### aux_analysisOscDelta.py
 Contains obtained values using the previously mentioned script. It is used to plot ECM = f(dt) for the three algorithms at once. Values should be copied manually to the corresponding lists.
-
-# Radiation Interaction
-
-## Simulation
-To generate executable and run damped oscillator simulation
-1. Run `./prepare.sh` in root to generate executables (only required once).
-2. Run `./target/tp5-simu-1.0/radiation-interaction.sh -Ddt=dt -Dv0=v0`. Parameters from `config.json` can be overwritten by using `dt` and `v0` properties.
-
-Output will be printed to `dynamic_file`, showing time and particle position and velocity for each timestep.
-
-## Animation Tool
-Generates `simulation_file` using information from `dynamic_file`.
-Run `python3 animator.py [dynamic_file]`, using the parameters from `config.json`. If provided, param overwrites `dynamic_file` from config.
-
-To view the animation, you must open `simulation_file` with Ovito:
-`./bin/ovito simulation_file`. 
-
-Particle color shows whether charge is positive (red) or negative (black).
-
-### Column Mapping 
-Configure the file column mapping as follows:
-   - Column 1 - Radius
-   - Column 2 - Position - X
-   - Column 3 - Position - Y
-   - Column 4 - Particle Identifier
-   - Column 5 - Color - R
-   - Column 6 - Color - G
-   - Column 7 - Color - B
 
 ## Analysis Tools
 
