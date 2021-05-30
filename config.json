@@ -9,14 +9,14 @@
 
     "rmin": 0.15,
     "rmax": 0.32,
-    "vdmax": 1.55,
+    "vdmax": 2.0,
     "tau": 0.5,
     "beta": 1.0,
 
     "use_seed": false,
     "seed": 1534342,
 
-    "dt_print_mult": 1,
+    "dt_print_mult": 4,
     "dt_anim_mult": 1,
 
     "plot": true
