@@ -36,7 +36,6 @@ public class ContractileParticleModel {
     private static final String TAU_CONFIG_KEY = "tau";
     private static final String BETA_CONFIG_KEY = "beta";
 
-    // TODO: Ver si aca hay algo aleatorio o no hace falta leer este seed
     private static final String USE_SEED_CONFIG_KEY = "use_seed";
     private static final String SEED_CONFIG_KEY = "seed";
 
@@ -95,6 +94,7 @@ public class ContractileParticleModel {
             // Set particle class properties
             Particle.setSide(l);
             Particle.setDoorWidth(d);
+            Particle.setRand(rand);
             // Create particle list
             particles = createParticleList(reader, n, cellMatrix, cimM, cimCellWidth);
         } catch (FileNotFoundException e) {
