@@ -3,7 +3,8 @@ package ar.edu.itba.sds;
 import ar.edu.itba.sds.objects.Particle;
 import ar.edu.itba.sds.objects.Step;
 import ar.edu.itba.sds.objects.Vector2D;
-import javafx.util.Pair;
+import ar.edu.itba.sds.objects.Pair;
+//import javafx.util.Pair;
 import org.json.JSONException;
 import org.json.JSONObject;
 

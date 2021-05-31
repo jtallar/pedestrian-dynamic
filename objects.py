@@ -215,6 +215,10 @@ class AnalysisRad(object):
         self.pos_x_list = pos_x_list
         self.pos_y_list = pos_y_list
 
+class AnalysisDload(object):
+    def __init__(self, time_list, n_list):
+        self.time_list = time_list
+        self.n_list = n_list
 
 class FullValue(object):
     def __init__(self, media, std):
