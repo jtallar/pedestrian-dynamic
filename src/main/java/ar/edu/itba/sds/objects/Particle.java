@@ -47,7 +47,7 @@ public class Particle implements Comparable<Particle> {
     // TODO: Check if we should do this or what paper says: take a random point in door instead of closest one
     private void updateTarget() {
         double targetY, targetWidth, targetMargin;
-        if (pos.getY() < 0) {
+        if (doorCrossed()) {
             targetY = FAR_TARGET_Y;
             targetWidth = FAR_TARGET_WIDTH;
             targetMargin = 0;
@@ -109,6 +109,10 @@ public class Particle implements Comparable<Particle> {
         updateTarget();
         // Build Step
         return new Step<>(curTime, this.r, this.pos, this.vel);
+    }
+
+    public boolean doorCrossed() {
+        return pos.getY() < 0;
     }
 
     public boolean reachedGoal() {
