@@ -355,6 +355,33 @@ def plot_error_bars(x_values, x_label, y_values, y_label, y_error, x_prec=2, y_p
     else:
         plt.show(block=False)
 
+def plot_error_bars_x(x_values, x_label, y_values, y_label, x_error, x_prec=2, y_prec=2, sci_x=False, sci_y=False, y_min=None, y_max=None, log=False, save_name=None):
+    fig, ax = plt.subplots(figsize=(12, 10))  # Create a figure containing a single axes.
+    (_, caps, _) = plt.errorbar(x_values, y_values, xerr=x_error, markersize=6, capsize=0, elinewidth=0.75, linestyle='-',  marker='o')  # Plot some data on the axes
+    for cap in caps:
+        cap.set_markeredgewidth(1)
+
+    ax.set_ylim([y_min, y_max])
+    if log:
+        ax.set_yscale('symlog', linthresh=1e-3)
+
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+
+    if sci_x:
+        if not log: ax.ticklabel_format(axis="x", style="sci", scilimits=(0,0))
+        ax.xaxis.set_major_formatter(MathTextSciFormatter(f'%1.{x_prec}e'))
+    if sci_y:
+        if not log: ax.ticklabel_format(axis="y", style="sci", scilimits=(0,0))
+        ax.yaxis.set_major_formatter(MathTextSciFormatter(f'%1.{y_prec}e'))
+
+    plt.grid()
+    plt.tight_layout()
+    if save_name:
+        plt.savefig(save_name)
+    else:
+        plt.show(block=False)
+
 def plot_multiple_error_bars(x_values_superlist, x_label, y_values_superlist, y_label, y_error, legend_list, x_prec=2, y_prec=2, sci_x=False, sci_y=True, y_min=None, y_max=None, log_x=False, log_y=False, legend_loc='upper right', save_name=None):
     fig, ax = plt.subplots(figsize=(12, 10))  # Create a figure containing a single axes.
     for i in range(len(x_values_superlist)):
