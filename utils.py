@@ -105,51 +105,52 @@ def plot_histogram_density(values, n_bins, x_label, y_label, precision=2, sci_x=
 
     plt.show(block=False)
 
-# Linear regression with b = 0
-def f_adj(x, c):
-    return c * x
+# Linear regression for Beverloo, linear regression of modified values with b = 0
+def f_adj(d, rmed, b):
+    C = 1 # TODO: Definir valor de constante
+    EXP = 1.5
+    return b * ((d - C * rmed) ** EXP)
 
-def calculate_regression(x_values, y_values, plot_error=False):
+def calculate_regression(x_values, rmed_values, y_values, plot_error=False):
     min_error, min_c = float("Inf"), 10
     error_list = []
-    c_list = []
+    b_list = []
 
-    for c in np.arange(-2, 2, 0.0001):
+    # TODO: Ver por dónde anda el b
+    for b in np.arange(-2, 2, 0.0001):
         error_sum = 0
         for i in range(0, len(x_values)):
-            error_sum += (y_values[i] - f_adj(x_values[i], c)) ** 2
+            error_sum += (y_values[i] - f_adj(x_values[i], rmed_values[i], b)) ** 2
         
         error_list.append(error_sum)
-        c_list.append(c)
+        b_list.append(b)
 
         if error_sum < min_error:
             min_error = error_sum
-            min_c = c
+            min_b = b
     
     if plot_error:
-        # Plot Error = f(c)
+        # Plot Error = f(b)
         fig, ax = plt.subplots(figsize=(12, 10))  # Create a figure containing a single axes.
-        ax.plot(c_list, error_list)
-        ax.set_xlabel('c')
+        ax.plot(b_list, error_list)
+        ax.set_xlabel('b')
         ax.set_ylabel('Error')
 
         plt.grid()
         plt.tight_layout()
         plt.show(block=False)
 
-    return min_c, min_error
+    return min_b, min_error
 
-def plot_values_with_adjust(x_values, x_label, y_values, y_label, precision=2, sci=True, min_val=None, max_val=None, plot=True, save_name=None):
-    # adj_coef = np.polyfit(x_values, y_values, 1)
-    # poly1d_fn = np.poly1d(adj_coef)
+def plot_values_with_adjust(x_values, x_label, y_values, y_label, rmed_values, precision=2, sci=True, min_val=None, max_val=None, plot=True, save_name=None):
 
-    c, err = calculate_regression(x_values, y_values, plot)
-    print(c, err)
+    b, err = calculate_regression(x_values, rmed_values, y_values, plot)
+    print(b, err)
 
-    if not plot: return c
+    if not plot: return b
 
     fig, ax = plt.subplots(figsize=(12, 10))  # Create a figure containing a single axes.
-    ax.plot(x_values, y_values, 'yo', x_values, [f_adj(x, c) for x in x_values], '-k')  # Plot some data on the axes
+    ax.plot(x_values, y_values, 'yo', x_values, [f_adj(x, r, b) for x,r in zip(x_values, rmed_values)], '-k')  # Plot some data on the axes
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
     
@@ -169,7 +170,7 @@ def plot_values_with_adjust(x_values, x_label, y_values, y_label, precision=2, s
     else:
         plt.show(block=False)
 
-    return c
+    return b
 
 def plot_multiple_values(x_values_superlist, x_label, y_values_superlist, y_label, legend_list, precision=2, sci_x=False, sci_y=True, min_val_x=None, max_val_x=None, min_val_y=None, max_val_y=None, log_x=False, log_y=False, legend_loc='upper right', save_name=None):
     fig, ax = plt.subplots(figsize=(12, 10))  # Create a figure containing a single axes.
