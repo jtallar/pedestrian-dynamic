@@ -1,6 +1,6 @@
 {
     "dynamic_file": "dynamic.txt",
-    "exit_file": "exit.txt",
+    "exit_file": "exit_1.txt",
     "animation_file": "simu.xyz",
 
     "N": 200,
