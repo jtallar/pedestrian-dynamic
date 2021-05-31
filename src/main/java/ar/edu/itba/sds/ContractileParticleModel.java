@@ -4,7 +4,6 @@ import ar.edu.itba.sds.objects.Particle;
 import ar.edu.itba.sds.objects.Step;
 import ar.edu.itba.sds.objects.Vector2D;
 import ar.edu.itba.sds.objects.Pair;
-//import javafx.util.Pair;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -37,7 +36,6 @@ public class ContractileParticleModel {
     private static final String TAU_CONFIG_KEY = "tau";
     private static final String BETA_CONFIG_KEY = "beta";
 
-    // TODO: Ver si aca hay algo aleatorio o no hace falta leer este seed
     private static final String USE_SEED_CONFIG_KEY = "use_seed";
     private static final String SEED_CONFIG_KEY = "seed";
 
@@ -96,6 +94,7 @@ public class ContractileParticleModel {
             // Set particle class properties
             Particle.setSide(l);
             Particle.setDoorWidth(d);
+            Particle.setRand(rand);
             // Create particle list
             particles = createParticleList(reader, n, cellMatrix, cimM, cimCellWidth);
         } catch (FileNotFoundException e) {
@@ -111,6 +110,7 @@ public class ContractileParticleModel {
         long startTime = System.currentTimeMillis();
 
         // Simulation
+        Set<Integer> exitedRoomIds = new HashSet<>();
         long printCount = 0;
         while (!particles.isEmpty()) {
             // Instantiate new String Builders
@@ -140,10 +140,14 @@ public class ContractileParticleModel {
                 final Pair<Integer, Integer> curRowCol = getRowColPair(p.getPos().getX(), p.getPos().getY(), cimM, cimCellWidth);
                 // Update speed and position
                 final Step<Vector2D> pStep = p.updateState(time, deltaTimeSim);
-                if (p.reachedGoal()) {
-                    mapSetRemove(cellMatrix, curRowCol, p);
+                // If door crossed and just crossed, print to exitStr
+                if (p.doorCrossed() && !exitedRoomIds.contains(p.getId())) {
                     exitStr.append(getTimePrint(time));
-                } else {
+                    exitedRoomIds.add(p.getId());
+                }
+                // If goal reached, remove particle from particle list and cell matrix
+                if (p.reachedGoal()) mapSetRemove(cellMatrix, curRowCol, p);
+                else {
                     nextParticleList.add(p);
                     // Calculate new rowCol for particle in cell matrix
                     final Pair<Integer, Integer> newRowCol = getRowColPair(p.getPos().getX(), p.getPos().getY(), cimM, cimCellWidth);

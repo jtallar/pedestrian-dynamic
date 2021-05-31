@@ -1,5 +1,7 @@
 package ar.edu.itba.sds.objects;
 
+import java.util.Random;
+
 public class Particle implements Comparable<Particle> {
     private static final double DOOR_MARGIN = 0.2;
     private static final double DOOR_TARGET_Y = 0;
@@ -7,6 +9,7 @@ public class Particle implements Comparable<Particle> {
     private static final double FAR_TARGET_WIDTH = 3;
 
     private static Double l = null, d = null;
+    private static Random rand = null;
 
     private final int id;
     private Vector2D pos;
@@ -23,6 +26,10 @@ public class Particle implements Comparable<Particle> {
         Particle.d = d;
     }
 
+    public static void setRand(Random rand) {
+        Particle.rand = rand;
+    }
+
     /**
      * Create a particle with radius
      * @param id particle id
@@ -32,7 +39,7 @@ public class Particle implements Comparable<Particle> {
      * @throws IllegalStateException if l and d were not set before this method call.
      */
     public Particle(int id, Vector2D pos, Vector2D vel, double r) {
-        if (l == null || d == null) throw new IllegalStateException("You should set l and d before instantiating Particles!");
+        if (l == null || d == null || rand == null) throw new IllegalStateException("You should set l, d and rand before instantiating Particles!");
 
         this.id = id;
         this.pos = pos;
@@ -44,10 +51,9 @@ public class Particle implements Comparable<Particle> {
         updateTarget();
     }
 
-    // TODO: Check if we should do this or what paper says: take a random point in door instead of closest one
     private void updateTarget() {
         double targetY, targetWidth, targetMargin;
-        if (pos.getY() < 0) {
+        if (doorCrossed()) {
             targetY = FAR_TARGET_Y;
             targetWidth = FAR_TARGET_WIDTH;
             targetMargin = 0;
@@ -60,8 +66,9 @@ public class Particle implements Comparable<Particle> {
         double leftTargetX = (l - targetWidth + targetMargin) / 2;
         double rightTargetX = (l + targetWidth - targetMargin) / 2;
 
-        if (pos.getX() < leftTargetX) target.setCoordinates(leftTargetX, targetY);
-        else target.setCoordinates(Math.min(pos.getX(), rightTargetX), targetY);
+        if (pos.getX() < leftTargetX || pos.getX() > rightTargetX)
+            target.setCoordinates(rand.nextDouble() * (rightTargetX - leftTargetX) + leftTargetX, targetY);
+        else target.setCoordinates(pos.getX(), targetY);
     }
 
     // Accumulate collision with otherPos in eij
@@ -109,6 +116,10 @@ public class Particle implements Comparable<Particle> {
         updateTarget();
         // Build Step
         return new Step<>(curTime, this.r, this.pos, this.vel);
+    }
+
+    public boolean doorCrossed() {
+        return pos.getY() < 0;
     }
 
     public boolean reachedGoal() {
