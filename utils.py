@@ -107,7 +107,7 @@ def plot_histogram_density(values, n_bins, x_label, y_label, precision=2, sci_x=
 
 # Linear regression for Beverloo, linear regression of modified values with b = 0
 def f_adj(d, rmed, b):
-    C = 1 # TODO: Definir valor de constante
+    C = 0.5
     EXP = 1.5
     return b * ((d - C * rmed) ** EXP)
 
@@ -116,8 +116,7 @@ def calculate_regression(x_values, rmed_values, y_values, plot_error=False):
     error_list = []
     b_list = []
 
-    # TODO: Ver por dónde anda el b
-    for b in np.arange(-2, 2, 0.0001):
+    for b in np.arange(-1, 4, 0.0001):
         error_sum = 0
         for i in range(0, len(x_values)):
             error_sum += (y_values[i] - f_adj(x_values[i], rmed_values[i], b)) ** 2
@@ -145,7 +144,7 @@ def calculate_regression(x_values, rmed_values, y_values, plot_error=False):
 def plot_values_with_adjust(x_values, x_label, y_values, y_label, rmed_values, precision=2, sci=True, min_val=None, max_val=None, plot=True, save_name=None):
 
     b, err = calculate_regression(x_values, rmed_values, y_values, plot)
-    print(b, err)
+    print("Adjusting, b=", b, "Error(b)=", err)
 
     if not plot: return b
 

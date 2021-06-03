@@ -28,9 +28,15 @@ L = utils.read_config_param(
 d = utils.read_config_param(
     config, "d", lambda el : float(el), lambda el : el > 0)
 
+# Constant values
+W = 10
+LEFT_PERC_STAT_Q = 0.15
+RIGHT_PERC_STAT_Q = 0.85
+
 # Perform multiple plotting and analysis
 x_superlist, y_superlist, legend_list = [], [], []
 n_dict, t_dict = {}, {}
+r_dict = {}
 n_to_d = {200:1.2, 260:1.8, 320:2.4, 380:3.0}
 # ={1.2, 1.8, 2.4, 3.0}m y N = {200, 260, 320, 380}
 for filename in exit_files:
@@ -49,16 +55,21 @@ for filename in exit_files:
     n_dict[n].append(metric.n_list)
     t_dict[n].append(metric.time_list)
 
+    dynamic_filename = filename.replace('exit', 'dynamic')
+    rad_med = anl.get_radius_array(dynamic_filename, int(LEFT_PERC_STAT_Q * n) - W, int(RIGHT_PERC_STAT_Q * n))
+    if n not in r_dict:
+        r_dict[n] = []
+    r_dict[n].append(rad_med)
+
 q_mean, q_dev = [], []
+r_med = []
 q_superlist, time_superlist, d_list = [], [], []
-W = 10
-LEFT_PERC = 0.15
-RIGHT_PERC = 0.85
 
 for key in n_dict.keys():
     avg_x, avg_y, err_x, q_list = anl.analyze_avg(t_dict[key], n_dict[key], n_to_d[key], W, plot_boolean)
-    q_mean.append(sts.mean(q_list[int(LEFT_PERC * key):int(RIGHT_PERC * key)]))
-    q_dev.append(sts.stdev(q_list[int(LEFT_PERC * key):int(RIGHT_PERC * key)]))
+    q_mean.append(sts.mean(q_list[int(LEFT_PERC_STAT_Q * key):int(RIGHT_PERC_STAT_Q * key)]))
+    q_dev.append(sts.stdev(q_list[int(LEFT_PERC_STAT_Q * key):int(RIGHT_PERC_STAT_Q * key)]))
+    r_med.append(sts.mean(r_dict[n]))
     d_list.append(n_to_d[key])
     q_superlist.append(q_list)
     time_superlist.append(avg_y[W:])
@@ -88,6 +99,15 @@ if plot_boolean:
         'caudal',
         q_dev, 
         sci_y= False
+    )
+
+    utils.plot_values_with_adjust(
+        d_list,
+        'd',
+        q_mean,
+        'caudal',
+        r_med,
+        sci=False
     )
 
     # Hold execution

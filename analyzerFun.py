@@ -72,3 +72,26 @@ def analyze_avg(x_superlist, y_superlist, d, w, plot_boolean):
         # Hold execution
         # utils.hold_execution()
     return x_avg_list, y_superlist[0], x_err_list, q_list
+
+def get_radius_array(dynamic_file, min_n, max_n):
+    dynamic_file = open(dynamic_file, "r")
+
+    it_sum_rad, tot_sum_rad = 0, 0
+    it_len, tot_len = 0, 0
+    restart = True
+    for linenum, line in enumerate(dynamic_file):
+        if restart:
+            restart = False
+            continue
+        if "*" == line.rstrip():
+            restart = True
+            if it_len >= min_n and it_len <= max_n:
+                tot_sum_rad += it_sum_rad / it_len
+                tot_len += 1
+            it_sum_rad, it_len = 0, 0
+            continue
+        
+        it_sum_rad += float(line.rstrip().split(' ')[5])
+        it_len += 1
+
+    return tot_sum_rad / tot_len
