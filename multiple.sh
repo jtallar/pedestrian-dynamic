@@ -37,8 +37,8 @@ do
     ALL_OUT_EXIT="$ALL_OUT_EXIT $OUT_EXIT"
 done
 
-echo "$ALL_OUT_DYN $ALL_OUT_EXIT"
-python3.8 analyzerMult.py $ALL_OUT_EXIT
-
 # Reenable plotting
 sed -i -e 's/\"plot\": false/\"plot\": true/g' config.json
+
+echo "$ALL_OUT_DYN $ALL_OUT_EXIT"
+python3.8 analyzerMult.py $ALL_OUT_EXIT

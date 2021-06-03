@@ -25,8 +25,9 @@ do
     OUT_EXIT="$OUT_EXIT $EXIT"
     echo "-----------------------------------"
 done
-echo "$OUT_DYN $OUT_EXIT"
-python3.8 analyzerSame.py $OUT_EXIT
 
 # Reenable plotting
 sed -i -e 's/\"plot\": false/\"plot\": true/g' config.json
+
+echo "$OUT_DYN $OUT_EXIT"
+python3.8 analyzerSame.py $OUT_EXIT

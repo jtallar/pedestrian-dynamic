@@ -48,7 +48,7 @@ else:
     # y_superlist.append(metric.exact_sol)
     # legend_list.append("analítica")
 
-    avg_x, avg_y, err_x = anl.analyze_avg(x_superlist, y_superlist, d, w, True)
+    avg_x, avg_y, err_x, q_list = anl.analyze_avg(x_superlist, y_superlist, d, w, True)
 
     x_superlist.append(avg_x)
     y_superlist.append(avg_y)
