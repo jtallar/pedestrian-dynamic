@@ -51,14 +51,17 @@ for filename in exit_files:
 
 q_mean, q_dev = [], []
 q_superlist, time_superlist, d_list = [], [], []
-w = 10
+W = 10
+LEFT_PERC = 0.15
+RIGHT_PERC = 0.85
+
 for key in n_dict.keys():
-    avg_x, avg_y, err_x, q_list = anl.analyze_avg(t_dict[key], n_dict[key], n_to_d[key], w, True)
-    q_mean.append(sts.mean(q_list[25:key-25]))
-    q_dev.append(sts.stdev(q_list[25:key-25]))
+    avg_x, avg_y, err_x, q_list = anl.analyze_avg(t_dict[key], n_dict[key], n_to_d[key], W, True)
+    q_mean.append(sts.mean(q_list[int(LEFT_PERC * key):int(RIGHT_PERC * key)]))
+    q_dev.append(sts.stdev(q_list[int(LEFT_PERC * key):int(RIGHT_PERC * key)]))
     d_list.append(n_to_d[key])
     q_superlist.append(q_list)
-    time_superlist.append(avg_y[w:])
+    time_superlist.append(avg_y[W:])
 
 # x_superlist.append(avg_x)
 # y_superlist.append(avg_y)
