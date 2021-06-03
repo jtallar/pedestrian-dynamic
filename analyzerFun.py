@@ -55,7 +55,7 @@ def analyze_avg(x_superlist, y_superlist, d, w, plot_boolean):
     # w = 10
     q_list = []
     for i in range(w,len(x_avg_list)):
-        q_list.append(1/(d*(x_avg_list[i]-x_avg_list[i-w])))         # Caudal
+        q_list.append(w/(x_avg_list[i]-x_avg_list[i-w]))         # Caudal
 
     # else: q_list.append(1)              
     # x_avg_list = sts.mean(x_superlist)
