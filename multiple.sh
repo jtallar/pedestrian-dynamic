@@ -38,8 +38,7 @@ do
 done
 
 echo "$ALL_OUT_DYN $ALL_OUT_EXIT"
-# TODO: Call analysis.py with ALL_OUT_DYN or ALL_OUT_EXIT accordingly
-# python3.8 analysis.py $ALL_OUT_DYN
+python3.8 analyzerMult.py $ALL_OUT_EXIT
 
 # Reenable plotting
 sed -i -e 's/\"plot\": false/\"plot\": true/g' config.json
