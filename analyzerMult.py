@@ -85,27 +85,27 @@ if plot_boolean:
     # Plot outgoing particles f(t) + avg
     utils.plot_multiple_values(
         time_superlist,
-        'particles',
+        'particulas salientes',
         q_superlist,
-        'caudal',
+        'caudal (1/s)',
         legend_list,
         sci_y=False
     )
 
     utils.plot_error_bars(
         d_list,
-        'd',
+        'd (m)',
         q_mean, 
-        'caudal',
+        'caudal (1/s)',
         q_dev, 
         sci_y= False
     )
 
     utils.plot_values_with_adjust(
         d_list,
-        'd',
+        'd (m)',
         q_mean,
-        'caudal',
+        'caudal (1/s)',
         r_med,
         sci=False
     )

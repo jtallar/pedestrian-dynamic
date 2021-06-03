@@ -31,7 +31,7 @@ def analyze_dload(exit_file, N, d, plot_boolean):
         # Plot Salientes = f(t)
         utils.plot_values(
             time_list, 'tiempo (s)', 
-            n_vec, 'particulas que salieron',
+            n_vec, 'particulas salientes',
             sci_x=True, precision=0
         )
 
@@ -65,10 +65,10 @@ def analyze_avg(x_superlist, y_superlist, d, w, plot_boolean):
         # Plot Salientes = f(t)
         utils.plot_values(
              y_superlist[0][w:], 'particulas salientes', 
-             q_list, 'caudal',
+             q_list, 'caudal (1/s)',
              sci_y=False, precision=0
          )
-        utils.plot_error_bars_x(x_avg_list,"tiempo", y_superlist[0],"particulas salientes", x_err_list)
+        utils.plot_error_bars_x(x_avg_list,"tiempo (s)", y_superlist[0],"particulas salientes", x_err_list)
         # Hold execution
         # utils.hold_execution()
     return x_avg_list, y_superlist[0], x_err_list, q_list
