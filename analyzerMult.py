@@ -56,7 +56,7 @@ LEFT_PERC = 0.15
 RIGHT_PERC = 0.85
 
 for key in n_dict.keys():
-    avg_x, avg_y, err_x, q_list = anl.analyze_avg(t_dict[key], n_dict[key], n_to_d[key], W, True)
+    avg_x, avg_y, err_x, q_list = anl.analyze_avg(t_dict[key], n_dict[key], n_to_d[key], W, plot_boolean)
     q_mean.append(sts.mean(q_list[int(LEFT_PERC * key):int(RIGHT_PERC * key)]))
     q_dev.append(sts.stdev(q_list[int(LEFT_PERC * key):int(RIGHT_PERC * key)]))
     d_list.append(n_to_d[key])
