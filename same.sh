@@ -27,6 +27,7 @@ do
 done
 echo "$OUT_DYN $OUT_EXIT"
 # TODO: Call analysis.py with OUT_DYN or OUT_EXIT accordingly
+python3.8 analyzerSame.py $OUT_EXIT
 # python3.8 analysis.py $OUT_DYN
 
 # Reenable plotting

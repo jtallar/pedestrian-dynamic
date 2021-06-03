@@ -3,6 +3,7 @@ import sys
 import json
 import utils
 import analyzerFun as anl
+import statistics as sts
 
 # Read out exit filename param if provided
 exit_files = None
@@ -27,52 +28,67 @@ L = utils.read_config_param(
 d = utils.read_config_param(
     config, "d", lambda el : float(el), lambda el : el > 0)
 
-if exit_files is None:
-    # Perform one analysis only once
-    anl.analyze_dload(exit_filename, N, d, plot_boolean)
-else:
-    # Perform multiple plotting and analysis
-    x_superlist = []
-    y_superlist = []
-    legend_list = []
-    for filename in exit_files:
-        # Expected filename format: ALGO-dt.txt
-        name_data = filename[:-4].split('-', 1) # Take filename without .txt extension
-        metric = anl.analyze_dload(filename, N, L, False)
-        x_superlist.append(metric.time_list)
-        y_superlist.append(metric.n_list)
-        legend_list.append(name_data[0])
-    # x_superlist.append(metric.time_vec)
-    # y_superlist.append(metric.exact_sol)
-    # legend_list.append("analítica")
+# Perform multiple plotting and analysis
+x_superlist, y_superlist, legend_list = [], [], []
+n_dict, t_dict = {}, {}
+n_to_d = {200:1.2, 260:1.8, 320:2.4, 380:3.0}
+# ={1.2, 1.8, 2.4, 3.0}m y N = {200, 260, 320, 380}
+for filename in exit_files:
+    # Expected filename format: exit-N-i.txt
+    name_data = filename[:-4].split('-') # Take filename without .txt extension
+    n = int(name_data[1])
+    
+    metric = anl.analyze_dload(filename, n, L, False)
+    x_superlist.append(metric.time_list)
+    y_superlist.append(metric.n_list)
+    legend_list.append(name_data)
+    
+    if n not in n_dict:
+        n_dict[n] = []
+        t_dict[n] = []
+    n_dict[n].append(metric.n_list)
+    t_dict[n].append(metric.time_list)
 
-    avg_x, avg_y, err_x = anl.analyze_avg(x_superlist, y_superlist, True)
+q_mean, q_dev = [], []
+q_superlist, time_superlist, d_list = [], [], []
+w = 10
+for key in n_dict.keys():
+    avg_x, avg_y, err_x, q_list = anl.analyze_avg(t_dict[key], n_dict[key], n_to_d[key], w, True)
+    q_mean.append(sts.mean(q_list[25:key-25]))
+    q_dev.append(sts.stdev(q_list[25:key-25]))
+    d_list.append(n_to_d[key])
+    q_superlist.append(q_list)
+    time_superlist.append(avg_y[w:])
 
-    x_superlist.append(avg_x)
-    y_superlist.append(avg_y)
-    legend_list.append("promedio")
-    if plot_boolean:
-        # Initialize plotting
-        utils.init_plotter()
+# x_superlist.append(avg_x)
+# y_superlist.append(avg_y)
+# legend_list.append("promedio")
 
-        # Plot outgoing particles f(t) + avg
-        utils.plot_multiple_values(
-            x_superlist,
-            'tiempo (s)',
-            y_superlist,
-            'particulas salientes',
-            legend_list,
-            sci_y=False
-        )
+if plot_boolean:
+    # Initialize plotting
+    utils.init_plotter()
 
-        utils.plot_multiple_values(
-            y_superlist,
-            'particulas salientes',
-            x_superlist,
-            'tiempo (s)',
-            legend_list,
-            sci_y=False
-        )
+    # Plot outgoing particles f(t) + avg
+    utils.plot_multiple_values(
+        time_superlist,
+        'particles',
+        q_superlist,
+        'caudal',
+        legend_list,
+        sci_y=False
+    )
 
-        # Hold execution
-        utils.hold_execution()    
+    utils.plot_error_bars(
+        d_list,
+        'd',
+        q_mean, 
+        'caudal',
+        q_dev, 
+        sci_y= False
+    )
+
+    # Hold execution
+    utils.hold_execution() 
+
+
+    # parsear el dynamic , tomar los radios y promediarlos entre el primer t y el ultimo

@@ -357,7 +357,8 @@ def plot_error_bars(x_values, x_label, y_values, y_label, y_error, x_prec=2, y_p
 
 def plot_error_bars_x(x_values, x_label, y_values, y_label, x_error, x_prec=2, y_prec=2, sci_x=False, sci_y=False, y_min=None, y_max=None, log=False, save_name=None):
     fig, ax = plt.subplots(figsize=(12, 10))  # Create a figure containing a single axes.
-    (_, caps, _) = plt.errorbar(x_values, y_values, xerr=x_error, markersize=6, capsize=0, elinewidth=0.75, linestyle='-',  marker='o')  # Plot some data on the axes
+    (_, caps, _) = plt.errorbar(x_values, y_values, xerr=x_error, markersize=3, capsize=0, elinewidth=0.75, ecolor='r', linestyle='-',  marker='o')  # Plot some data on the axes
+    # plt.plot(x_values, y_values)
     for cap in caps:
         cap.set_markeredgewidth(1)
 

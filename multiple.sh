@@ -20,8 +20,8 @@ do
     OUT_EXIT=""
     for i in $(seq 1 $REP)
     do
-        DYN="dynamic_$N-$i.txt"
-        EXIT="exit_$N-$i.txt"
+        DYN="dynamic-$N-$i.txt"
+        EXIT="exit-$N-$i.txt"
         python3.8 generator.py $DYN $N
         ./target/tp5-simu-1.0/pedestrian-dynamic.sh -Dn="$N" -Dd="$D" -Ddynamic="$DYN" -Dexit="$EXIT"
         OUT_DYN="$OUT_DYN $DYN"

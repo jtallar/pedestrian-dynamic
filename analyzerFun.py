@@ -46,21 +46,29 @@ def analyze_dload(exit_file, N, d, plot_boolean):
 
     return obj.AnalysisDload(time_list, n_vec)
 
-def analyze_avg(x_superlist, y_superlist, plot_boolean):
+def analyze_avg(x_superlist, y_superlist, d, w, plot_boolean):
     x_avg_list = [sts.mean(k) for k in zip(*x_superlist)]
     x_err_list = [sts.stdev(k) for k in zip(*x_superlist)]
 
+    # de window a size 
+    # if time_list[-1]-time_list[-2] != 0:      # TODO: QUE PASA SI LA RESTA DA 0 
+    # w = 10
+    q_list = []
+    for i in range(w,len(x_avg_list)):
+        q_list.append(1/(d*(x_avg_list[i]-x_avg_list[i-w])))         # Caudal
+
+    # else: q_list.append(1)              
     # x_avg_list = sts.mean(x_superlist)
     if plot_boolean:
         # Initialize plotting
         utils.init_plotter()
         # Plot Salientes = f(t)
-        # utils.plot_values(
-        #     x_avg_list, 'tiempo promedio (s)', 
-        #     y_superlist[0], 'particulas que salieron',
-        #     sci_x=True, precision=0
-        # )
-        utils.plot_error_bars_x(x_avg_list,"time mean", y_superlist[0],"out particles", x_err_list)
+        utils.plot_values(
+             y_superlist[0][w:], 'particulas salientes', 
+             q_list, 'caudal',
+             sci_y=False, precision=0
+         )
+        utils.plot_error_bars_x(x_avg_list,"tiempo", y_superlist[0],"particulas salientes", x_err_list)
         # Hold execution
-        utils.hold_execution()
-    return x_avg_list, y_superlist[0], x_err_list
+        # utils.hold_execution()
+    return x_avg_list, y_superlist[0], x_err_list, q_list
