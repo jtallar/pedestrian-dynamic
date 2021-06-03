@@ -20,8 +20,8 @@ do
     OUT_EXIT=""
     for i in $(seq 1 $REP)
     do
-        DYN="dynamic_$N-$i.txt"
-        EXIT="exit_$N-$i.txt"
+        DYN="dynamic-$N-$i.txt"
+        EXIT="exit-$N-$i.txt"
         python3.8 generator.py $DYN $N
         ./target/tp5-simu-1.0/pedestrian-dynamic.sh -Dn="$N" -Dd="$D" -Ddynamic="$DYN" -Dexit="$EXIT"
         OUT_DYN="$OUT_DYN $DYN"
@@ -37,9 +37,8 @@ do
     ALL_OUT_EXIT="$ALL_OUT_EXIT $OUT_EXIT"
 done
 
-echo "$ALL_OUT_DYN $ALL_OUT_EXIT"
-# TODO: Call analysis.py with ALL_OUT_DYN or ALL_OUT_EXIT accordingly
-# python3.8 analysis.py $ALL_OUT_DYN
-
 # Reenable plotting
 sed -i -e 's/\"plot\": false/\"plot\": true/g' config.json
+
+echo "$ALL_OUT_DYN $ALL_OUT_EXIT"
+python3.8 analyzerMult.py $ALL_OUT_EXIT

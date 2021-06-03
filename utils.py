@@ -107,7 +107,7 @@ def plot_histogram_density(values, n_bins, x_label, y_label, precision=2, sci_x=
 
 # Linear regression for Beverloo, linear regression of modified values with b = 0
 def f_adj(d, rmed, b):
-    C = 1 # TODO: Definir valor de constante
+    C = 0.5
     EXP = 1.5
     return b * ((d - C * rmed) ** EXP)
 
@@ -116,8 +116,7 @@ def calculate_regression(x_values, rmed_values, y_values, plot_error=False):
     error_list = []
     b_list = []
 
-    # TODO: Ver por dónde anda el b
-    for b in np.arange(-2, 2, 0.0001):
+    for b in np.arange(-1, 4, 0.0001):
         error_sum = 0
         for i in range(0, len(x_values)):
             error_sum += (y_values[i] - f_adj(x_values[i], rmed_values[i], b)) ** 2
@@ -145,7 +144,7 @@ def calculate_regression(x_values, rmed_values, y_values, plot_error=False):
 def plot_values_with_adjust(x_values, x_label, y_values, y_label, rmed_values, precision=2, sci=True, min_val=None, max_val=None, plot=True, save_name=None):
 
     b, err = calculate_regression(x_values, rmed_values, y_values, plot)
-    print(b, err)
+    print("Adjusting, b=", b, "Error(b)=", err)
 
     if not plot: return b
 
@@ -331,6 +330,34 @@ def plot_error_bars_summary(x_values, x_label, sum_values, attribute, y_label, x
 def plot_error_bars(x_values, x_label, y_values, y_label, y_error, x_prec=2, y_prec=2, sci_x=False, sci_y=True, y_min=None, y_max=None, log=False, save_name=None):
     fig, ax = plt.subplots(figsize=(12, 10))  # Create a figure containing a single axes.
     (_, caps, _) = plt.errorbar(x_values, y_values, yerr=y_error, markersize=6, capsize=20, elinewidth=0.75, linestyle='-',  marker='o')  # Plot some data on the axes
+    for cap in caps:
+        cap.set_markeredgewidth(1)
+
+    ax.set_ylim([y_min, y_max])
+    if log:
+        ax.set_yscale('symlog', linthresh=1e-3)
+
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+
+    if sci_x:
+        if not log: ax.ticklabel_format(axis="x", style="sci", scilimits=(0,0))
+        ax.xaxis.set_major_formatter(MathTextSciFormatter(f'%1.{x_prec}e'))
+    if sci_y:
+        if not log: ax.ticklabel_format(axis="y", style="sci", scilimits=(0,0))
+        ax.yaxis.set_major_formatter(MathTextSciFormatter(f'%1.{y_prec}e'))
+
+    plt.grid()
+    plt.tight_layout()
+    if save_name:
+        plt.savefig(save_name)
+    else:
+        plt.show(block=False)
+
+def plot_error_bars_x(x_values, x_label, y_values, y_label, x_error, x_prec=2, y_prec=2, sci_x=False, sci_y=False, y_min=None, y_max=None, log=False, save_name=None):
+    fig, ax = plt.subplots(figsize=(12, 10))  # Create a figure containing a single axes.
+    (_, caps, _) = plt.errorbar(x_values, y_values, xerr=x_error, markersize=3, capsize=0, elinewidth=0.75, ecolor='r', linestyle='-',  marker='o')  # Plot some data on the axes
+    # plt.plot(x_values, y_values)
     for cap in caps:
         cap.set_markeredgewidth(1)
 

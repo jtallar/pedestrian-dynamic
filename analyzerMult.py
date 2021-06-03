@@ -3,6 +3,7 @@ import sys
 import json
 import utils
 import analyzerFun as anl
+import statistics as sts
 
 # Read out exit filename param if provided
 exit_files = None
@@ -27,52 +28,90 @@ L = utils.read_config_param(
 d = utils.read_config_param(
     config, "d", lambda el : float(el), lambda el : el > 0)
 
-if exit_files is None:
-    # Perform one analysis only once
-    anl.analyze_dload(exit_filename, N, d, plot_boolean)
-else:
-    # Perform multiple plotting and analysis
-    x_superlist = []
-    y_superlist = []
-    legend_list = []
-    for filename in exit_files:
-        # Expected filename format: ALGO-dt.txt
-        name_data = filename[:-4].split('-', 1) # Take filename without .txt extension
-        metric = anl.analyze_dload(filename, N, L, False)
-        x_superlist.append(metric.time_list)
-        y_superlist.append(metric.n_list)
-        legend_list.append(name_data[0])
-    # x_superlist.append(metric.time_vec)
-    # y_superlist.append(metric.exact_sol)
-    # legend_list.append("analítica")
+# Constant values
+W = 10
+LEFT_PERC_STAT_Q = 0.15
+RIGHT_PERC_STAT_Q = 0.85
 
-    avg_x, avg_y = anl.analyze_avg(x_superlist, y_superlist, False)
+# Perform multiple plotting and analysis
+x_superlist, y_superlist, legend_list = [], [], []
+n_dict, t_dict = {}, {}
+r_dict = {}
+n_to_d = {200:1.2, 260:1.8, 320:2.4, 380:3.0}
+# ={1.2, 1.8, 2.4, 3.0}m y N = {200, 260, 320, 380}
+for filename in exit_files:
+    # Expected filename format: exit-N-i.txt
+    name_data = filename[:-4].split('-') # Take filename without .txt extension
+    n = int(name_data[1])
+    
+    metric = anl.analyze_dload(filename, n, L, False)
+    x_superlist.append(metric.time_list)
+    y_superlist.append(metric.n_list)
+    legend_list.append(name_data)
+    
+    if n not in n_dict:
+        n_dict[n] = []
+        t_dict[n] = []
+    n_dict[n].append(metric.n_list)
+    t_dict[n].append(metric.time_list)
 
-    x_superlist.append(avg_x)
-    y_superlist.append(avg_y)
-    legend_list.append("promedio")
-    if plot_boolean:
-        # Initialize plotting
-        utils.init_plotter()
+    dynamic_filename = filename.replace('exit', 'dynamic')
+    rad_med = anl.get_radius_array(dynamic_filename, int(LEFT_PERC_STAT_Q * n) - W, int(RIGHT_PERC_STAT_Q * n))
+    if n not in r_dict:
+        r_dict[n] = []
+    r_dict[n].append(rad_med)
 
-        # Plot outgoing particles f(t) + avg
-        utils.plot_multiple_values(
-            x_superlist,
-            'tiempo (s)',
-            y_superlist,
-            'particulas salientes',
-            legend_list,
-            sci_y=False
-        )
+q_mean, q_dev = [], []
+r_med = []
+q_superlist, time_superlist, d_list = [], [], []
 
-        utils.plot_multiple_values(
-            y_superlist,
-            'particulas salientes',
-            x_superlist,
-            'tiempo (s)',
-            legend_list,
-            sci_y=False
-        )
+for key in n_dict.keys():
+    avg_x, avg_y, err_x, q_list = anl.analyze_avg(t_dict[key], n_dict[key], n_to_d[key], W, plot_boolean)
+    q_mean.append(sts.mean(q_list[int(LEFT_PERC_STAT_Q * key):int(RIGHT_PERC_STAT_Q * key)]))
+    q_dev.append(sts.stdev(q_list[int(LEFT_PERC_STAT_Q * key):int(RIGHT_PERC_STAT_Q * key)]))
+    r_med.append(sts.mean(r_dict[n]))
+    d_list.append(n_to_d[key])
+    q_superlist.append(q_list)
+    time_superlist.append(avg_y[W:])
 
-        # Hold execution
-        utils.hold_execution()    
+# x_superlist.append(avg_x)
+# y_superlist.append(avg_y)
+# legend_list.append("promedio")
+
+if plot_boolean:
+    # Initialize plotting
+    utils.init_plotter()
+
+    # Plot outgoing particles f(t) + avg
+    utils.plot_multiple_values(
+        time_superlist,
+        'particles',
+        q_superlist,
+        'caudal',
+        legend_list,
+        sci_y=False
+    )
+
+    utils.plot_error_bars(
+        d_list,
+        'd',
+        q_mean, 
+        'caudal',
+        q_dev, 
+        sci_y= False
+    )
+
+    utils.plot_values_with_adjust(
+        d_list,
+        'd',
+        q_mean,
+        'caudal',
+        r_med,
+        sci=False
+    )
+
+    # Hold execution
+    utils.hold_execution() 
+
+
+    # parsear el dynamic , tomar los radios y promediarlos entre el primer t y el ultimo
