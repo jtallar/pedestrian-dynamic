@@ -63,7 +63,7 @@ for filename in exit_files:
 
 q_mean, q_dev = [], []
 r_med = []
-q_superlist, time_superlist, d_list = [], [], []
+q_superlist, n_superlist, time_superlist, d_list = [], [], [], []
 
 for key in n_dict.keys():
     avg_x, avg_y, err_x, q_list = anl.analyze_avg(t_dict[key], n_dict[key], n_to_d[key], W, plot_boolean)
@@ -72,7 +72,8 @@ for key in n_dict.keys():
     r_med.append(sts.mean(r_dict[n]))
     d_list.append(n_to_d[key])
     q_superlist.append(q_list)
-    time_superlist.append(avg_y[W:])
+    time_superlist.append(avg_x[W:])
+    n_superlist.append(avg_y[W:])
 
 # x_superlist.append(avg_x)
 # y_superlist.append(avg_y)
@@ -82,10 +83,20 @@ if plot_boolean:
     # Initialize plotting
     utils.init_plotter()
 
+    # Plot outgoing particles f(n) + avg
+    utils.plot_multiple_values(
+        n_superlist,
+        'particulas salientes',
+        q_superlist,
+        'caudal (1/s)',
+        legend_list,
+        sci_y=False
+    )
+
     # Plot outgoing particles f(t) + avg
     utils.plot_multiple_values(
         time_superlist,
-        'particulas salientes',
+        'tiempo (s)',
         q_superlist,
         'caudal (1/s)',
         legend_list,
