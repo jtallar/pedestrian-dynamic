@@ -67,8 +67,9 @@ def analyze_avg(x_superlist, y_superlist, d, w, plot_boolean):
              y_superlist[0][w:], 'particulas salientes', 
              q_list, 'caudal (1/s)',
              sci_y=False, precision=0
-         )
+        )
         utils.plot_error_bars_x(x_avg_list,"tiempo (s)", y_superlist[0],"particulas salientes", x_err_list)
+        utils.plot_error_bars(y_superlist[0],"particulas salientes", x_avg_list,"tiempo (s)", x_err_list, sci_y=False)
         # Hold execution
         # utils.hold_execution()
     return x_avg_list, y_superlist[0], x_err_list, q_list
