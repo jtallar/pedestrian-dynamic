@@ -69,7 +69,7 @@ for key in n_dict.keys():
     avg_x, avg_y, err_x, q_list = anl.analyze_avg(t_dict[key], n_dict[key], n_to_d[key], W, plot_boolean)
     q_mean.append(sts.mean(q_list[int(LEFT_PERC_STAT_Q * key):int(RIGHT_PERC_STAT_Q * key)]))
     q_dev.append(sts.stdev(q_list[int(LEFT_PERC_STAT_Q * key):int(RIGHT_PERC_STAT_Q * key)]))
-    r_med.append(sts.mean(r_dict[n]))
+    r_med.append(sts.mean(r_dict[key]))
     d_list.append(n_to_d[key])
     q_superlist.append(q_list)
     time_superlist.append(avg_x[W:])
@@ -117,6 +117,16 @@ if plot_boolean:
         'd (m)',
         q_mean,
         'caudal (1/s)',
+        r_med,
+        sci=False
+    )
+
+    utils.plot_values_with_adjust_and_err(
+        d_list,
+        'd (m)',
+        q_mean,
+        'caudal (1/s)',
+        q_dev,
         r_med,
         sci=False
     )

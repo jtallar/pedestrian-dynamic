@@ -171,6 +171,50 @@ def plot_values_with_adjust(x_values, x_label, y_values, y_label, rmed_values, p
 
     return b
 
+def plot_values_with_adjust_and_err(x_values, x_label, y_values, y_label, y_error, rmed_values, precision=2, sci=True, min_val=None, max_val=None, plot=True, save_name=None):
+
+    b, err = calculate_regression(x_values, rmed_values, y_values, plot)
+    print("Adjusting, b=", b, "Error(b)=", err)
+
+    if not plot: return b
+
+    fig, ax = plt.subplots(figsize=(12, 10))  # Create a figure containing a single axes.
+    ax.plot(x_values, [f_adj(x, r, b) for x,r in zip(x_values, rmed_values)], 'or', markersize=8)  # Plot some data on the axes
+    d_adj_values = []
+    f_adj_values = []
+    for i in range(len(x_values) - 1):
+        for d in np.arange(x_values[i], x_values[i + 1], 0.02):
+            f_adj_values.append(f_adj(d, rmed_values[i] + (rmed_values[i + 1] - rmed_values[i]) * (d - x_values[i]) / (x_values[i + 1] - x_values[i]), b))
+            d_adj_values.append(d)
+    f_adj_values.append(f_adj(x_values[-1], rmed_values[-1], b))
+    d_adj_values.append(x_values[-1])
+    ax.plot(d_adj_values, f_adj_values, '-r', label='ajuste')  # Plot some data on the axes
+
+    (_, caps, _) = plt.errorbar(x_values, y_values, yerr=y_error, markersize=8, capsize=20, elinewidth=0.75, linestyle='-',  marker='o', label='caudal')  # Plot some data on the axes
+    for cap in caps:
+        cap.set_markeredgewidth(1)
+
+    ax.set_xlabel(x_label)
+    ax.set_ylabel(y_label)
+    
+    if min_val is not None and max_val is not None:
+        ax.set_xlim([min_val, max_val])
+        ax.set_ylim([min_val, max_val])
+
+    if sci:
+        ax.ticklabel_format(scilimits=(0,0))
+        ax.xaxis.set_major_formatter(MathTextSciFormatter(f'%1.{precision}e'))
+        ax.yaxis.set_major_formatter(MathTextSciFormatter(f'%1.{precision}e'))
+
+    plt.grid()
+    plt.tight_layout()
+    if save_name:
+        plt.savefig(save_name)
+    else:
+        plt.show(block=False)
+
+    return b
+
 def plot_multiple_values(x_values_superlist, x_label, y_values_superlist, y_label, legend_list, precision=2, sci_x=False, sci_y=True, min_val_x=None, max_val_x=None, min_val_y=None, max_val_y=None, log_x=False, log_y=False, legend_loc='upper right', save_name=None):
     fig, ax = plt.subplots(figsize=(12, 10))  # Create a figure containing a single axes.
 
