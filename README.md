@@ -60,45 +60,49 @@ Configure the file column mapping as follows:
 
 ## Analysis Tools
 
-### analysisRad.py
-Generate plots and metrics given a single simulation file as input.
-Run `python3 analysisRad.py [file_1 file_2 ...]`, using parameters from `config.json`.
+### analyzerSame.py
+Generate plots and metrics given simulation files as input.
+Run `python3 analyzerSame.py [file_1 file_2 ...]`, using parameters from `config.json`.
 
-If one or more filenames are provided, analysis will be performed individually and then condensed for multiple simulations. This can be used to provide one simulation file for each timestep or v0, or to use multiple repetitions for each value. If plot is false, then no graphs are plotted.
-
-Metrics calculated for each simulation are:
-- Total trajectory length (L)
-- Sum of total energy difference (sum of |ET(0)-ET(t)|)
-- Average of total energy difference
-- Ending motive
+If one or more filenames are provided, analysis will be performed individually and then condensed for multiple simulations. This can be used to provide multiple repetitions for a given set of parameters. If plot is false, then no graphs are plotted.
 
 Plots shown are:
-- |ET(t=0) - ET(t>0)| = f(t) with log scale
-- L = f(t)
-- Particle trajectory
+- n = f(t), n: number of particles that left
 
-If multiple files are provided, some more metrics are calculated are:
-- Average total energy difference for all files (mean±stdev)
-- Average total trajectory length for all files (mean±stdev)
-- Average number of steps for all files (mean±stdev)
-- Ending count for each possible ending motive
-
-And some more plots are shown:
-- |ET(t=0) - ET(t>0)| = f(t) with log scale for each dt
-- Average |ET(t=0) - ET(t>0)| = f(t) with error bars for each dt
-- Multiple particle trajectories (both with dt and v0 in legend)
+If multiple files are provided, some more plots are shown:
+- Discharge = f(n), taking dn=10
+- n = f(t) for each simulation file
+- t = f(n) for each simulation file
+- n = f(t avg) with horizontal error bars for each value
+- t avg = f(n) with vertical error bars for each value
 
 ### same.sh
 This script can be used to run `pedestrian-dynamic` simulation multiple times with the same params, given N, d and a number of repetitions.
 `./same.sh N d rep`
 
-The script runs `rep` simulations with the parameters `N` and `d`. Then, it runs `analysis.py` with the output datafiles as parameters.
+The script runs `rep` simulations with the parameters `N` and `d`. Then, it runs `analyzerSame.py` with the output datafiles as parameters.
+
+### analyzerSame.py
+Generate plots and metrics given multiple simulation files as input.
+Run `python3 analyzerMult.py [file_1 file_2 ...]`. Filenames must be in the format `name-N-...`.
+
+Aanalysis will be performed individually and then condensed for multiple simulations. This can be used to provide multiple repetitions for a multiple sets of parameters. If plot is false, then no graphs are plotted.
+
+Plots shown for each (N,d) pair are:
+- Discharge = f(n), taking dn=10
+- n = f(t avg) with horizontal error bars for each value
+- t avg = f(n) with vertical error bars for each value
+
+Plots shown as a comparison between sets of parameters are
+- Discharge = f(n) for each (N,d) pair
+- Discharge = f(t) for each (N,d) pair
+- Average discharge in stationary sector for each d value with vertical error bars
+- Average discharge in stationary sector adjusted via Beverloo's Law (with corresponding error plot)
+- Average discharge in stationary sector adjusted via Beverloo's Law with the vertical error bars and a continous adjustment (with corresponding error plot)
+
 
 ### multiple.sh
 This script can be used to run `pedestrian-dynamic` simulation multiple times with different params, given a number of repetitions.
 `./multiple.sh rep`
 
-The script runs `rep` simulations for each of the following (N;d) params: (200;1.2), (260;1.8), (320;2.4), (380;3.0). Then, it runs `analysis.py` with the output datafiles as parameters.
-
-### aux_analysisRadVel.py
-Contains obtained values using the previously mentioned script. It is used to plot L = f(V0) for different initial velocities at once and a probability distribution for each ending motive. Values should be copied manually to the corresponding lists.
+The script runs `rep` simulations for each of the following (N;d) params: (200;1.2), (260;1.8), (320;2.4), (380;3.0). Then, it runs `analyzerMult.py` with the output datafiles as parameters.
